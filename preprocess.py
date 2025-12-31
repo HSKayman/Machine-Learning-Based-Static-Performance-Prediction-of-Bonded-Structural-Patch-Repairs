@@ -232,10 +232,9 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Preprocess data for ANN training')
-    parser.add_argument('--config', type=str, default='config.yaml',
-                        help='Path to config file')
+    parser.add_argument('--config', type=str, default='config.yaml')
     parser.add_argument('--dataset', type=str, choices=['patched', 'unpatched', 'both'],
-                        default='both', help='Which dataset to preprocess')
+                        default='both')
     args = parser.parse_args()
     
     # Load config

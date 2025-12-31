@@ -1,5 +1,5 @@
 """
-Synthetic data generation module using Gaussian Mixture Model (GMM).
+Synthetic data generation(basically oversampling) module using Gaussian Mixture Model (GMM).
 Includes quality validation for generated samples.
 """
 
@@ -15,34 +15,16 @@ from sklearn.ensemble import RandomForestRegressor
 import yaml
 import warnings
 
-
+# Generate synthetic data using Gaussian Mixture Model.
 class GMMSyntheticGenerator:
-    """
-    Generate synthetic data using Gaussian Mixture Model.
-    
-    Advantages over SMOTE:
-    - Models full joint distribution of features + target
-    - Captures multimodal distributions naturally
-    - Preserves correlations between features
-    - Designed for density estimation, not just classification imbalance
-    """
-    
+    # Initialize GMM generator.
     def __init__(self,
                  n_components: int = 3,
                  target_samples: int = 300,
                  random_state: int = 42,
                  max_retries: int = 5,
                  quality_threshold: float = 0.05):
-        """
-        Initialize GMM generator.
-        
-        Args:
-            n_components: Number of GMM components (clusters)
-            target_samples: Target total samples after augmentation
-            random_state: Random seed for reproducibility
-            max_retries: Max attempts to pass quality check
-            quality_threshold: KS-test p-value threshold
-        """
+     
         self.n_components = n_components
         self.target_samples = target_samples
         self.random_state = random_state
@@ -55,30 +37,20 @@ class GMMSyntheticGenerator:
         self.encoded_shapes: Dict[str, int] = {}
         self.regressor: Optional[RandomForestRegressor] = None
         self.original_df: Optional[pd.DataFrame] = None
-        
+    
+    # Fit the GMM on the original data.   
     def fit(self,
             df: pd.DataFrame,
             float_cols: List[str],
             cat_cols: List[str],
             target_col: str) -> 'GMMSyntheticGenerator':
-        """
-        Fit the GMM on the original data.
-        
-        Args:
-            df: Original DataFrame
-            float_cols: List of numerical column names
-            cat_cols: List of categorical column names
-            target_col: Target column name
-            
-        Returns:
-            Self for chaining
-        """
+
         self.float_cols = float_cols
         self.cat_cols = cat_cols
         self.target_col = target_col
         self.original_df = df.copy()
         
-        # One-hot encode categorical columns
+        # One hot encode categorical columns
         encoded_parts = []
         for col in cat_cols:
             encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
@@ -128,17 +100,9 @@ class GMMSyntheticGenerator:
         print(f"  GMM fitted with {self.gmm.n_components} components")
         
         return self
-    
+    # Generate synthetic samples from the fitted GMM.
     def generate(self, n_samples: Optional[int] = None) -> pd.DataFrame:
-        """
-        Generate synthetic samples from the fitted GMM.
-        
-        Args:
-            n_samples: Number of samples to generate
-            
-        Returns:
-            DataFrame with synthetic samples
-        """
+
         if n_samples is None:
             n_samples = max(0, self.target_samples - len(self.original_df))
         
@@ -196,22 +160,8 @@ class GMMSyntheticGenerator:
         df_synth[self.target_col] = np.clip(df_synth[self.target_col], min_val, max_val)
         
         return df_synth
-    
+    #  Validate the quality of generated synthetic data.
     def validate_quality(self, df_synth: pd.DataFrame) -> Dict[str, Any]:
-        """
-        Validate the quality of generated synthetic data.
-        
-        Checks:
-        - KS-test for each numerical column
-        - Correlation matrix similarity
-        - Distribution statistics comparison
-        
-        Args:
-            df_synth: Synthetic DataFrame
-            
-        Returns:
-            Quality report dictionary
-        """
         report = {
             'passed': True,
             'n_original': len(self.original_df),
@@ -283,15 +233,10 @@ class GMMSyntheticGenerator:
             }
         
         return report
-    
+    # Generate synthetic data with quality validation.
+    # Retries if quality check fails.
     def generate_with_validation(self) -> Tuple[pd.DataFrame, Dict[str, Any]]:
-        """
-        Generate synthetic data with quality validation.
-        Retries if quality check fails.
-        
-        Returns:
-            Tuple of (synthetic DataFrame, quality report)
-        """
+      
         n_synthetic = max(0, self.target_samples - len(self.original_df))
         
         if n_synthetic <= 0:
@@ -340,23 +285,12 @@ class GMMSyntheticGenerator:
         
         return best_df, best_report
 
-
+# Generate synthetic data using GMM and validate quality.
 def generate_synthetic_data(X: np.ndarray,
                             y: np.ndarray,
                             preprocessor,
                             config: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict]:
-    """
-    Generate synthetic data using GMM and validate quality.
     
-    Args:
-        X: Original features (preprocessed)
-        y: Original targets
-        preprocessor: DataPreprocessor instance
-        config: Synthetic data configuration
-        
-    Returns:
-        Tuple of (X_aug, y_aug, synthetic_mask, quality_report)
-    """
     # Build DataFrame from preprocessed data for GMM
     df = preprocessor.inverse_transform_X(X)
     df[preprocessor.target_col] = y
@@ -397,17 +331,15 @@ def generate_synthetic_data(X: np.ndarray,
     
     return X_aug, y_aug, synthetic_mask, quality_report
 
-
+# Run synthetic data generation as standalone script.
 def main():
-    """Run synthetic data generation as standalone script."""
     import argparse
     from preprocess import DataPreprocessor
     
     parser = argparse.ArgumentParser(description='Generate synthetic data using GMM')
-    parser.add_argument('--config', type=str, default='config.yaml',
-                        help='Path to config file')
+    parser.add_argument('--config', type=str, default='config.yaml')
     parser.add_argument('--dataset', type=str, choices=['patched', 'unpatched', 'both'],
-                        default='both', help='Which dataset to process')
+                        default='both')
     args = parser.parse_args()
     
     # Load config

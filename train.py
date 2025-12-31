@@ -23,24 +23,15 @@ warnings.filterwarnings('ignore')
 # Set device
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
+# Dynamic ANN with configurable architecture
 class DynamicANN(nn.Module):
-    """Dynamic ANN with configurable architecture."""
-    
+    # Initialize ANN
     def __init__(self, 
                  input_dim: int,
                  hidden_layers: List[int],
                  activation: str = 'relu',
                  dropout_rate: float = 0.0):
-        """
-        Initialize ANN.
         
-        Args:
-            input_dim: Number of input features
-            hidden_layers: List of hidden layer sizes, e.g., [64, 32, 16, 8]
-            activation: Activation function name
-            dropout_rate: Dropout probability
-        """
         super().__init__()
         
         self.activation_name = activation
@@ -60,9 +51,9 @@ class DynamicANN(nn.Module):
         layers.append(nn.Linear(prev_dim, 1))
         
         self.network = nn.Sequential(*layers)
-    
+    # Get activation function by name.
     def _get_activation(self, name: str) -> nn.Module:
-        """Get activation function by name."""
+        
         activations = {
             'relu': nn.ReLU(),
             'leaky_relu': nn.LeakyReLU(0.1),
@@ -77,9 +68,9 @@ class DynamicANN(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.network(x)
 
-
+# Early stopping handler.
 class EarlyStopping:
-    """Early stopping handler."""
+
     
     def __init__(self, patience: int = 50, min_delta: float = 1e-5):
         self.patience = patience
@@ -105,19 +96,14 @@ class EarlyStopping:
         if self.best_state is not None:
             model.load_state_dict(self.best_state)
 
-
+# Train model for one fold.
 def train_single_fold(model: nn.Module,
                       train_loader: DataLoader,
                       val_loader: DataLoader,
                       epochs: int,
                       learning_rate: float,
                       patience: int) -> Tuple[float, float, float, int]:
-    """
-    Train model for one fold.
     
-    Returns:
-        Tuple of (val_mape, val_mse, val_r2, epochs_trained)
-    """
     model = model.to(DEVICE)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -189,7 +175,7 @@ def train_single_fold(model: nn.Module,
     
     return val_mape, val_mse, val_r2, epochs_trained
 
-
+# Train model with K-Fold cross-validation.
 def train_with_kfold(X: np.ndarray,
                      y: np.ndarray,
                      hidden_layers: List[int],
@@ -197,12 +183,7 @@ def train_with_kfold(X: np.ndarray,
                      learning_rate: float,
                      dropout_rate: float,
                      config: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Train model with K-Fold cross-validation.
-    
-    Returns:
-        Results dictionary with metrics for all folds
-    """
+ 
     n_folds = config.get('k_folds', 5)
     epochs = config.get('epochs', 2000)
     batch_size = config.get('batch_size', 16)
@@ -270,23 +251,12 @@ def train_with_kfold(X: np.ndarray,
         'best_mape': float(np.min(mapes))
     }
 
-
+# Run hyperparameter grid search.
 def run_grid_search(X: np.ndarray,
                     y: np.ndarray,
                     config: Dict[str, Any],
                     dataset_type: str) -> pd.DataFrame:
-    """
-    Run hyperparameter grid search.
     
-    Args:
-        X: Features
-        y: Targets
-        config: Training configuration
-        dataset_type: 'patched' or 'unpatched'
-        
-    Returns:
-        DataFrame with all experiment results
-    """
     training_config = config.get('training', {})
     
     architectures = training_config.get('architectures', [[64, 32, 16, 8]])
@@ -369,25 +339,13 @@ def run_grid_search(X: np.ndarray,
     
     return pd.DataFrame(results)
 
-
+# Train the best model on full data and save it
 def train_best_model(X: np.ndarray,
                      y: np.ndarray,
                      best_config: Dict[str, Any],
                      training_config: Dict[str, Any],
                      output_path: Path) -> nn.Module:
-    """
-    Train the best model on full data and save it.
-    
-    Args:
-        X: Full features
-        y: Full targets
-        best_config: Best hyperparameters
-        training_config: Training settings
-        output_path: Path to save model
-        
-    Returns:
-        Trained model
-    """
+
     import ast
     
     # Parse architecture string back to list
@@ -461,18 +419,16 @@ def train_best_model(X: np.ndarray,
     
     return model
 
-
+# Run training as standalone script
 def main():
-    """Run training as standalone script."""
+
     import argparse
     
     parser = argparse.ArgumentParser(description='Train ANN models with grid search')
-    parser.add_argument('--config', type=str, default='config.yaml',
-                        help='Path to config file')
+    parser.add_argument('--config', type=str, default='config.yaml')
     parser.add_argument('--dataset', type=str, choices=['patched', 'unpatched', 'both'],
-                        default='both', help='Which dataset to train on')
-    parser.add_argument('--use-augmented', action='store_true', default=True,
-                        help='Use augmented data (default: True)')
+                        default='both')
+    parser.add_argument('--use-augmented', action='store_true', default=True)
     args = parser.parse_args()
     
     # Load config
