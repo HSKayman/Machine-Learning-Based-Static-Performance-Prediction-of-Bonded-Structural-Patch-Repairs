@@ -1,0 +1,40 @@
+[2025-12-30 19:18:08] [INFO] ============================================================
+[2025-12-30 19:18:08] [INFO] ANN EXPERIMENT PIPELINE
+[2025-12-30 19:18:08] [INFO] ============================================================
+[2025-12-30 19:18:08] [INFO] Dataset: both
+[2025-12-30 19:18:08] [INFO] Config: config.yaml
+[2025-12-30 19:18:08] [INFO] Output: outputs
+[2025-12-30 19:18:08] [INFO] ------------------------------------------------------------
+[2025-12-30 19:18:08] [INFO] Starting stage: Preprocessing
+[2025-12-30 19:18:09] [INFO] Completed Preprocessing in 0.7s
+[2025-12-30 19:18:09] [INFO] ------------------------------------------------------------
+[2025-12-30 19:18:09] [INFO] Starting stage: Synthetic Data Generation
+[2025-12-30 19:18:10] [INFO] Completed Synthetic Data Generation in 1.2s
+[2025-12-30 19:18:10] [INFO] ------------------------------------------------------------
+[2025-12-30 19:18:10] [INFO] Starting stage: Training & Grid Search
+[2025-12-31 00:14:57] [INFO] Completed Training & Grid Search in 17806.5s
+[2025-12-31 00:14:57] [INFO] ------------------------------------------------------------
+[2025-12-31 00:14:57] [INFO] Starting stage: Visualization
+[2025-12-31 00:14:59] [INFO] Completed Visualization in 2.9s
+[2025-12-31 00:14:59] [INFO] ------------------------------------------------------------
+[2025-12-31 00:14:59] [INFO] Pipeline completed in 17811.3s (296.9 min)
+[2025-12-31 00:14:59] [INFO] ============================================================
+[2025-12-31 00:14:59] [INFO] 
+Generated files:
+[2025-12-31 00:14:59] [INFO]   - patched_augmented.npz
+[2025-12-31 00:14:59] [INFO]   - patched_best_model.pt
+[2025-12-31 00:14:59] [INFO]   - patched_feature_info.json
+[2025-12-31 00:14:59] [INFO]   - patched_preprocessor.pkl
+[2025-12-31 00:14:59] [INFO]   - patched_processed.npz
+[2025-12-31 00:14:59] [INFO]   - patched_quality_report.json
+[2025-12-31 00:14:59] [INFO]   - patched_results.xlsx
+[2025-12-31 00:14:59] [INFO]   - patched_visualization.png
+[2025-12-31 00:14:59] [INFO]   - pipeline_log_20251229_233454.txt
+[2025-12-31 00:14:59] [INFO]   - unpatched_augmented.npz
+[2025-12-31 00:14:59] [INFO]   - unpatched_best_model.pt
+[2025-12-31 00:14:59] [INFO]   - unpatched_feature_info.json
+[2025-12-31 00:14:59] [INFO]   - unpatched_preprocessor.pkl
+[2025-12-31 00:14:59] [INFO]   - unpatched_processed.npz
+[2025-12-31 00:14:59] [INFO]   - unpatched_quality_report.json
+[2025-12-31 00:14:59] [INFO]   - unpatched_results.xlsx
+[2025-12-31 00:14:59] [INFO]   - unpatched_visualization.png

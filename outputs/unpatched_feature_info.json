@@ -1,0 +1,26 @@
+{
+  "dataset_type": "unpatched",
+  "float_columns": [
+    "Crack Length (mm)",
+    "Test Temperature (F)",
+    "Material Thickness (mm)"
+  ],
+  "categorical_columns": [
+    "Material"
+  ],
+  "target_column": "Failure Load (kN)",
+  "source_column": "Unnamed: 5",
+  "feature_order": [
+    "Crack Length (mm)",
+    "Test Temperature (F)",
+    "Material Thickness (mm)",
+    "Material"
+  ],
+  "n_features": 4,
+  "categorical_mappings": {
+    "Material": {
+      "0": "A36 Steel",
+      "1": "Al 6061"
+    }
+  }
+}

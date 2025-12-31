@@ -1,0 +1,68 @@
+# ANN Experiment Configuration
+# ============================
+
+# Data paths (relative to wbu folder)
+data:
+  patched: "data/patched.xlsx"
+  unpatched: "data/unpatched.xlsx"
+  output_dir: "outputs"
+
+# Preprocessing settings
+preprocessing:
+  test_size: 0.2  # Hold-out test set ratio
+  random_state: 42
+
+# Synthetic data generation (GMM - Gaussian Mixture Model)
+synthetic:
+  enabled: true
+  target_samples: 300  # Target total samples after augmentation
+  n_components: 3  # Number of GMM components (clusters)
+  max_retries: 5  # Max attempts to pass quality check
+  random_state: 42
+  
+  # Quality validation thresholds
+  quality:
+    ks_test_alpha: 0.05  # KS-test significance level (p-value threshold)
+
+# Training hyperparameters grid
+training:
+  # Architectures to test (list of hidden layer sizes)
+  architectures:
+    - [64, 32, 16, 8]
+    - [128, 64, 32, 16, 8]
+    - [32, 16, 8]
+    - [64, 32, 16]
+    - [128, 64, 32]
+  
+  # Activation functions to test
+  activation_functions:
+    - relu
+    - leaky_relu
+    - elu
+    - tanh
+  
+  # Learning rates to test
+  learning_rates:
+    - 0.001
+    - 0.0005
+    - 0.0001
+  
+  # Dropout rates to test
+  dropout_rates:
+    - 0.0
+    - 0.1
+    - 0.2
+  
+  # Training settings
+  epochs: 2000
+  batch_size: 16
+  early_stopping_patience: 50
+  k_folds: 5
+  random_state: 42
+
+# Visualization settings
+visualization:
+  top_n_configs: 10  # Number of top configurations to show
+  figure_dpi: 300
+  style: "seaborn-v0_8-whitegrid"
+

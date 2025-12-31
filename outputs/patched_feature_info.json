@@ -1,0 +1,33 @@
+{
+  "dataset_type": "patched",
+  "float_columns": [
+    "Material Thickness (mm)",
+    "Patch Thickness (mm)",
+    "Test Temperature (F)"
+  ],
+  "categorical_columns": [
+    "Material",
+    "Patch"
+  ],
+  "target_column": "Failure Load (kN)",
+  "source_column": "Source",
+  "feature_order": [
+    "Material Thickness (mm)",
+    "Patch Thickness (mm)",
+    "Test Temperature (F)",
+    "Material",
+    "Patch"
+  ],
+  "n_features": 5,
+  "categorical_mappings": {
+    "Material": {
+      "0": "A36 Steel",
+      "1": "Al 6061",
+      "2": "Al6061"
+    },
+    "Patch": {
+      "0": "Carbon-Fiber",
+      "1": "Glass-Fiber"
+    }
+  }
+}

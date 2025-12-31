@@ -1,0 +1,43 @@
+# Quick test configuration (reduced for testing)
+
+data:
+  patched: "data/patched.xlsx"
+  unpatched: "data/unpatched.xlsx"
+  output_dir: "outputs"
+
+preprocessing:
+  test_size: 0.2
+  random_state: 42
+
+synthetic:
+  enabled: true
+  target_samples: 200
+  k_neighbors: 5
+  random_state: 42
+  quality:
+    ks_test_alpha: 0.05
+    max_boundary_violation_pct: 5.0
+    min_neighbor_distance_ratio: 0.1
+
+# Reduced grid for testing
+training:
+  architectures:
+    - [64, 32, 16, 8]
+    - [32, 16, 8]
+  activation_functions:
+    - relu
+    - leaky_relu
+  learning_rates:
+    - 0.001
+  dropout_rates:
+    - 0.0
+  epochs: 500
+  batch_size: 16
+  early_stopping_patience: 30
+  k_folds: 3
+  random_state: 42
+
+visualization:
+  top_n_configs: 4
+  figure_dpi: 150
+
