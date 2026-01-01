@@ -16,21 +16,25 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-# quality settings
+# quality settings - increased font sizes and bold for visibility
 plt.rcParams.update({
     'font.family': 'serif',
     'font.serif': ['Times New Roman', 'DejaVu Serif', 'serif'],
-    'font.size': 10,
-    'axes.labelsize': 11,
-    'axes.titlesize': 12,
-    'xtick.labelsize': 9,
-    'ytick.labelsize': 9,
-    'legend.fontsize': 9,
-    'figure.titlesize': 13,
-    'axes.linewidth': 0.8,
-    'grid.linewidth': 0.5,
-    'lines.linewidth': 1.5,
-    'lines.markersize': 6,
+    'font.size': 12,
+    'font.weight': 'bold',
+    'axes.labelsize': 14,
+    'axes.titlesize': 15,
+    'axes.labelweight': 'bold',
+    'axes.titleweight': 'bold',
+    'xtick.labelsize': 11,
+    'ytick.labelsize': 11,
+    'legend.fontsize': 11,
+    'figure.titlesize': 16,
+    'figure.titleweight': 'bold',
+    'axes.linewidth': 1.2,
+    'grid.linewidth': 0.6,
+    'lines.linewidth': 2.0,
+    'lines.markersize': 8,
 })
 
 # Color palette (colorblind-friendly)
@@ -82,9 +86,9 @@ def create_combined_figure(results_df: pd.DataFrame,
     combined_configs = pd.concat([top_5, middle_5, bottom_5], ignore_index=True)
     
     # Create figure with two subplots
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7))
-    fig.suptitle(f'{dataset_type.capitalize()} Specimens - Model Performance Analysis', 
-                 fontweight='bold', y=1.02)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+    # fig.suptitle(f'{dataset_type.capitalize()} Specimens - Model Performance Analysis', 
+    #              fontweight='bold', y=1.02)
     
     # Left: Horizontal bar chart of top 5 + middle 5 + bottom 5 configurations 
     y_positions = np.arange(len(combined_configs))
@@ -124,9 +128,9 @@ def create_combined_figure(results_df: pd.DataFrame,
     
     ax1.set_yticks(y_positions)
     ax1.set_yticklabels(labels)
-    ax1.tick_params(axis='y', labelsize=7)  # Smaller font for longer labels
+    ax1.tick_params(axis='y', labelsize=9)  # Adjusted font for longer labels
     ax1.set_xlabel('Mean Absolute Percentage Error (%)')
-    ax1.set_title('Top 5, Middle 5 & Bottom 5 Configurations', fontweight='bold', pad=10)
+    #ax1.set_title('Top 5, Middle 5 & Bottom 5 Configurations', fontweight='bold', pad=10)
     ax1.invert_yaxis()  # Best at top
     ax1.set_xlim(0, combined_configs['mean_mape'].max() * 1.15)
     
@@ -137,15 +141,15 @@ def create_combined_figure(results_df: pd.DataFrame,
     # Add value labels
     for i, (mape, std) in enumerate(zip(combined_configs['mean_mape'], combined_configs['std_mape'])):
         ax1.text(mape + std + 0.3, i, f'{mape:.2f}%', 
-                 va='center', fontsize=8, color=COLORS['neutral'])
+                 va='center', fontsize=10, fontweight='bold', color=COLORS['neutral'])
     
     # Add R^2 annotation for best
     best_r2 = top_5.iloc[0]['mean_r2']
     ax1.annotate(f'Best R² = {best_r2:.4f}', 
                  xy=(0.98, 0.02), xycoords='axes fraction',
                  ha='right', va='bottom',
-                 fontsize=9, fontweight='bold',
-                 bbox=dict(boxstyle='round,pad=0.3', facecolor=COLORS['light'], 
+                 fontsize=12, fontweight='bold',
+                 bbox=dict(boxstyle='round,pad=0.4', facecolor=COLORS['light'], 
                           edgecolor=COLORS['neutral'], alpha=0.8))
     
     # Add legend for colors
@@ -156,7 +160,7 @@ def create_combined_figure(results_df: pd.DataFrame,
         Patch(facecolor=COLORS['secondary'], edgecolor=COLORS['neutral'], label='Middle 5'),
         Patch(facecolor=COLORS['success'], edgecolor=COLORS['neutral'], label='Bottom 5')
     ]
-    ax1.legend(handles=legend_elements, loc='upper right', fontsize=8, framealpha=0.9)
+    ax1.legend(handles=legend_elements, loc='upper right', fontsize=10, framealpha=0.9)
     
     ax1.grid(True, axis='x', alpha=0.3, linestyle='--')
     ax1.set_axisbelow(True)
@@ -199,14 +203,14 @@ def create_combined_figure(results_df: pd.DataFrame,
     
     # Scatter plot
     ax2.scatter(y, y_pred, c=COLORS['primary'], alpha=0.6, 
-                edgecolors=COLORS['neutral'], linewidths=0.5, s=50)
+                edgecolors=COLORS['neutral'], linewidths=0.8, s=70)
     
     # Perfect prediction line
     min_val = min(y.min(), y_pred.min())
     max_val = max(y.max(), y_pred.max())
     margin = (max_val - min_val) * 0.05
     line_range = [min_val - margin, max_val + margin]
-    ax2.plot(line_range, line_range, 'k--', linewidth=1.5, alpha=0.7, label='Perfect Prediction')
+    ax2.plot(line_range, line_range, 'k--', linewidth=2.0, alpha=0.7, label='Perfect Prediction')
     
     # ±10% error bands
     ax2.fill_between(line_range, 
@@ -216,11 +220,11 @@ def create_combined_figure(results_df: pd.DataFrame,
     
     ax2.set_xlabel('Actual Failure Load (kN)')
     ax2.set_ylabel('Predicted Failure Load (kN)')
-    ax2.set_title('Actual vs Predicted (Best Model)', fontweight='bold', pad=10)
+    # ax2.set_title('Actual vs Predicted (Best Model)', fontweight='bold', pad=10)
     ax2.set_xlim(line_range)
     ax2.set_ylim(line_range)
     ax2.set_aspect('equal', adjustable='box')
-    ax2.legend(loc='lower right', framealpha=0.9)
+    ax2.legend(loc='lower right', fontsize=11, framealpha=0.9)
     ax2.grid(True, alpha=0.3, linestyle='--')
     
     # Add metrics annotation
@@ -232,7 +236,7 @@ def create_combined_figure(results_df: pd.DataFrame,
     ax2.annotate(metrics_text, 
                  xy=(0.05, 0.95), xycoords='axes fraction',
                  ha='left', va='top',
-                 fontsize=9,
+                 fontsize=12, fontweight='bold',
                  bbox=dict(boxstyle='round,pad=0.4', facecolor='white', 
                           edgecolor=COLORS['neutral'], alpha=0.9))
     
