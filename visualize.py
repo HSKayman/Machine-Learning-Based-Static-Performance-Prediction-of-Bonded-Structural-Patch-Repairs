@@ -20,16 +20,16 @@ warnings.filterwarnings('ignore')
 plt.rcParams.update({
     'font.family': 'serif',
     'font.serif': ['Times New Roman', 'DejaVu Serif', 'serif'],
-    'font.size': 12,
+    'font.size': 14,
     'font.weight': 'bold',
-    'axes.labelsize': 14,
-    'axes.titlesize': 15,
+    'axes.labelsize': 18,
+    'axes.titlesize': 20,
     'axes.labelweight': 'bold',
     'axes.titleweight': 'bold',
-    'xtick.labelsize': 11,
-    'ytick.labelsize': 11,
-    'legend.fontsize': 11,
-    'figure.titlesize': 16,
+    'xtick.labelsize': 14,
+    'ytick.labelsize': 14,
+    'legend.fontsize': 14,
+    'figure.titlesize': 22,
     'figure.titleweight': 'bold',
     'axes.linewidth': 1.2,
     'grid.linewidth': 0.6,
@@ -85,10 +85,9 @@ def create_combined_figure(results_df: pd.DataFrame,
     # Combine: top 5 first, then middle 5, then bottom 5
     combined_configs = pd.concat([top_5, middle_5, bottom_5], ignore_index=True)
     
-    # Create figure with two subplots
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
-    # fig.suptitle(f'{dataset_type.capitalize()} Specimens - Model Performance Analysis', 
-    #              fontweight='bold', y=1.02)
+    # Create separate figures for each plot
+    fig1, ax1 = plt.subplots(figsize=(10, 8))
+    fig2, ax2 = plt.subplots(figsize=(8, 8))
     
     # Left: Horizontal bar chart of top 5 + middle 5 + bottom 5 configurations 
     y_positions = np.arange(len(combined_configs))
@@ -128,7 +127,7 @@ def create_combined_figure(results_df: pd.DataFrame,
     
     ax1.set_yticks(y_positions)
     ax1.set_yticklabels(labels)
-    ax1.tick_params(axis='y', labelsize=9)  # Adjusted font for longer labels
+    ax1.tick_params(axis='y', labelsize=12)  # Adjusted font for longer labels
     ax1.set_xlabel('Mean Absolute Percentage Error (%)')
     #ax1.set_title('Top 5, Middle 5 & Bottom 5 Configurations', fontweight='bold', pad=10)
     ax1.invert_yaxis()  # Best at top
@@ -141,14 +140,14 @@ def create_combined_figure(results_df: pd.DataFrame,
     # Add value labels
     for i, (mape, std) in enumerate(zip(combined_configs['mean_mape'], combined_configs['std_mape'])):
         ax1.text(mape + std + 0.3, i, f'{mape:.2f}%', 
-                 va='center', fontsize=10, fontweight='bold', color=COLORS['neutral'])
+                 va='center', fontsize=12, fontweight='bold', color=COLORS['neutral'])
     
-    # Add R^2 annotation for best
+    # Add R^2 annotation for best (mean R² from CV results)
     best_r2 = top_5.iloc[0]['mean_r2']
-    ax1.annotate(f'Best R² = {best_r2:.4f}', 
+    ax1.annotate(f'R² = {best_r2:.4f}', 
                  xy=(0.98, 0.02), xycoords='axes fraction',
                  ha='right', va='bottom',
-                 fontsize=12, fontweight='bold',
+                 fontsize=14, fontweight='bold',
                  bbox=dict(boxstyle='round,pad=0.4', facecolor=COLORS['light'], 
                           edgecolor=COLORS['neutral'], alpha=0.8))
     
@@ -160,7 +159,7 @@ def create_combined_figure(results_df: pd.DataFrame,
         Patch(facecolor=COLORS['secondary'], edgecolor=COLORS['neutral'], label='Middle 5'),
         Patch(facecolor=COLORS['success'], edgecolor=COLORS['neutral'], label='Bottom 5')
     ]
-    ax1.legend(handles=legend_elements, loc='upper right', fontsize=10, framealpha=0.9)
+    ax1.legend(handles=legend_elements, loc='upper right', fontsize=12, framealpha=0.9)
     
     ax1.grid(True, axis='x', alpha=0.3, linestyle='--')
     ax1.set_axisbelow(True)
@@ -180,13 +179,15 @@ def create_combined_figure(results_df: pd.DataFrame,
         
         if model_path.exists():
             checkpoint = torch.load(model_path, map_location='cpu', weights_only=False)
-            arch = ast.literal_eval(best_config['architecture'])
+            # Use config from the saved checkpoint (not from results DataFrame)
+            saved_config = checkpoint['config']
+            arch = ast.literal_eval(saved_config['architecture']) if isinstance(saved_config['architecture'], str) else saved_config['architecture']
             
             model = DynamicANN(
-                input_dim=X.shape[1],
+                input_dim=checkpoint.get('input_dim', X.shape[1]),
                 hidden_layers=arch,
-                activation=best_config['activation'],
-                dropout_rate=best_config['dropout_rate']
+                activation=saved_config['activation'],
+                dropout_rate=saved_config['dropout_rate']
             )
             model.load_state_dict(checkpoint['model_state_dict'])
             model.eval()
@@ -216,7 +217,7 @@ def create_combined_figure(results_df: pd.DataFrame,
     ax2.fill_between(line_range, 
                      [v * 0.9 for v in line_range], 
                      [v * 1.1 for v in line_range],
-                     alpha=0.15, color=COLORS['accent'], label='±10% Error Band')
+                     alpha=0.3, color=COLORS['accent'], label='±10% Error Band')
     
     ax2.set_xlabel('Actual Failure Load (kN)')
     ax2.set_ylabel('Predicted Failure Load (kN)')
@@ -224,31 +225,39 @@ def create_combined_figure(results_df: pd.DataFrame,
     ax2.set_xlim(line_range)
     ax2.set_ylim(line_range)
     ax2.set_aspect('equal', adjustable='box')
-    ax2.legend(loc='lower right', fontsize=11, framealpha=0.9)
+    ax2.legend(loc='lower right', fontsize=14, framealpha=0.9)
     ax2.grid(True, alpha=0.3, linestyle='--')
     
-    # Add metrics annotation
-    from sklearn.metrics import mean_absolute_percentage_error, r2_score
-    mape_val = mean_absolute_percentage_error(y, y_pred) * 100
-    r2_val = r2_score(y, y_pred)
+    # Add metrics annotation (use CV mean values from results for consistency)
+    mape_val = best_config['mean_mape']
+    r2_val = best_config['mean_r2']
     
     metrics_text = f'MAPE: {mape_val:.2f}%\nR²: {r2_val:.4f}'
     ax2.annotate(metrics_text, 
                  xy=(0.05, 0.95), xycoords='axes fraction',
                  ha='left', va='top',
-                 fontsize=12, fontweight='bold',
+                 fontsize=16, fontweight='bold',
                  bbox=dict(boxstyle='round,pad=0.4', facecolor='white', 
                           edgecolor=COLORS['neutral'], alpha=0.9))
     
-    # Adjust layout
-    plt.tight_layout()
+    # Adjust layout and save figures separately
+    fig1.tight_layout()
+    fig2.tight_layout()
     
-    # Save figure
-    fig.savefig(output_path, dpi=dpi, bbox_inches='tight', 
-                facecolor='white', edgecolor='none')
-    plt.close(fig)
+    # Save figures
+    bar_chart_path = output_path.parent / f"{dataset_type}_bar_chart.pdf"
+    scatter_path = output_path.parent / f"{dataset_type}_scatter.pdf"
     
-    print(f"  Saved visualization to {output_path}")
+    fig1.savefig(bar_chart_path, dpi=dpi, bbox_inches='tight', 
+                 facecolor='white', edgecolor='none')
+    fig2.savefig(scatter_path, dpi=dpi, bbox_inches='tight', 
+                 facecolor='white', edgecolor='none')
+    
+    plt.close(fig1)
+    plt.close(fig2)
+    
+    print(f"  Saved bar chart to {bar_chart_path}")
+    print(f"  Saved scatter plot to {scatter_path}")
 
 # Run visualization as standalone script.
 def main():
