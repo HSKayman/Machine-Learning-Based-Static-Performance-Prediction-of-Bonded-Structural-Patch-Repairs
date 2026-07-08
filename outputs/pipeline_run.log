@@ -1,0 +1,407 @@
+
+=======================================================
+Preprocessing patched dataset
+=======================================================
+  Raw rows: 150
+  Real baseline rows: 75 (source column: Source)
+  Baseline provenance:
+    experimental: 63
+    FE Predictions: 12
+  Outer split -> train: 60, hold-out test: 15
+  Numeric: ['Material Thickness (mm)', 'Patch Thickness (mm)', 'Test Temperature (F)']
+  Categorical: ['Material', 'Patch'] -> one-hot
+  Target: Failure Load (kN)  |  Features: 7
+
+=======================================================
+Preprocessing unpatched dataset
+=======================================================
+  Raw rows: 144
+  Real baseline rows: 72 (source column: Source)
+  Baseline provenance:
+    calculated: 45
+    experimental: 27
+  Outer split -> train: 57, hold-out test: 15
+  Numeric: ['Crack Length (mm)', 'Test Temperature (F)', 'Material Thickness (mm)']
+  Categorical: ['Material'] -> one-hot
+  Target: Failure Load (kN)  |  Features: 5
+
+============================================================
+Deliverable augmented dataset for patched (GMM)
+============================================================
+  Baseline: 75  +  Synthetic: 225  =  300
+  KS quality passed: True  |  corr diff: 0.1306
+    KS Material Thickness (mm): p=0.1457 [PASS]
+    KS Patch Thickness (mm): p=1.0000 [PASS]
+    KS Test Temperature (F): p=0.8515 [PASS]
+    KS Failure Load (kN): p=0.1694 [PASS]
+  Saved: patched_augmented.csv, patched_quality_report.json, patched_synthetic_distributions.png
+
+============================================================
+Deliverable augmented dataset for unpatched (GMM)
+============================================================
+  Baseline: 72  +  Synthetic: 228  =  300
+  KS quality passed: True  |  corr diff: 0.1459
+    KS Crack Length (mm): p=0.5409 [PASS]
+    KS Test Temperature (F): p=0.8082 [PASS]
+    KS Material Thickness (mm): p=0.9770 [PASS]
+    KS Failure Load (kN): p=0.7129 [PASS]
+  Saved: unpatched_augmented.csv, unpatched_quality_report.json, unpatched_synthetic_distributions.png
+Using device: cuda
+
+==============================================================
+Dataset: patched  |  baseline=75 train=60 test=15  aug factor=4.00x
+==============================================================
+  Precomputing fold data (leakage-free augmentation, once per fold)...
+
+  [Linear] 1 configs
+    [1/1] MAPE=6.69% R2=0.703
+    (0.0s)
+
+  [Polynomial] 6 configs
+    [1/6] MAPE=4.98% R2=0.828
+    [2/6] MAPE=4.93% R2=0.828
+    [3/6] MAPE=5.36% R2=0.820
+    [4/6] MAPE=5.09% R2=0.768
+    [5/6] MAPE=4.96% R2=0.800
+    [6/6] MAPE=4.86% R2=0.821
+    (0.1s)
+
+  [SVR] 6 configs
+    [1/6] MAPE=7.06% R2=0.767
+    [2/6] MAPE=7.25% R2=0.758
+    [3/6] MAPE=4.74% R2=0.833
+    [4/6] MAPE=4.98% R2=0.814
+    [5/6] MAPE=4.75% R2=0.790
+    [6/6] MAPE=4.68% R2=0.816
+    (0.1s)
+
+  [RandomForest] 18 configs
+    [4/18] MAPE=4.73% R2=0.841
+    [8/18] MAPE=4.70% R2=0.838
+    [12/18] MAPE=4.70% R2=0.838
+    [16/18] MAPE=4.70% R2=0.837
+    (21.0s)
+
+  [GradientBoosting] 8 configs
+    [2/8] MAPE=4.82% R2=0.846
+    [4/8] MAPE=4.69% R2=0.842
+    [6/8] MAPE=4.81% R2=0.846
+    [8/8] MAPE=4.78% R2=0.834
+    (1.8s)
+
+  [XGBoost] 12 configs
+    [3/12] MAPE=4.70% R2=0.834
+    [6/12] MAPE=4.73% R2=0.835
+    [9/12] MAPE=4.68% R2=0.837
+    [12/12] MAPE=4.87% R2=0.829
+    (2.7s)
+
+  [LightGBM] 12 configs
+    [3/12] MAPE=4.76% R2=0.844
+    [6/12] MAPE=4.45% R2=0.843
+    [9/12] MAPE=4.44% R2=0.845
+    [12/12] MAPE=4.38% R2=0.840
+    (5.7s)
+
+  [GaussianProcess] 2 configs
+    [1/2] MAPE=5.21% R2=0.827
+    [2/2] MAPE=5.21% R2=0.827
+    (1.2s)
+
+  [ANN] 50 configs
+    [12/50] MAPE=7.01% R2=0.712
+    [24/50] MAPE=7.68% R2=0.656
+    [36/50] MAPE=5.73% R2=0.781
+    [48/50] MAPE=17.88% R2=-0.385
+    (619.5s)
+
+  [KAN] 1 configs
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+    [1/1] MAPE=4.92% R2=0.831
+    (158.5s)
+  -> Linear           cvAug=6.69%  cvBase=6.19%  test=8.28% (R2=0.727)
+  -> Polynomial       cvAug=4.86%  cvBase=3.42%  test=6.11% (R2=0.850)
+  -> SVR              cvAug=4.68%  cvBase=3.19%  test=3.73% (R2=0.937)
+  -> RandomForest     cvAug=4.70%  cvBase=2.57%  test=4.64% (R2=0.907)
+  -> GradientBoosting cvAug=4.52%  cvBase=2.65%  test=5.21% (R2=0.882)
+  -> XGBoost          cvAug=4.51%  cvBase=2.53%  test=5.23% (R2=0.880)
+  -> LightGBM         cvAug=4.38%  cvBase=17.19%  test=4.24% (R2=0.919)
+  -> GaussianProcess  cvAug=5.21%  cvBase=2.90%  test=6.28% (R2=0.849)
+  -> ANN              cvAug=5.03%  cvBase=4.60%  test=5.81% (R2=0.874)
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+  -> KAN              cvAug=4.92%  cvBase=2.74%  test=4.59% (R2=0.911)
+
+  === Model comparison (patched) — sorted by hold-out test MAPE ===
+    SVR               test MAPE= 3.73%  R2=0.937  | cv(aug)=4.68%  cv(base)=3.19%
+    LightGBM          test MAPE= 4.24%  R2=0.919  | cv(aug)=4.38%  cv(base)=17.19%
+    KAN               test MAPE= 4.59%  R2=0.911  | cv(aug)=4.92%  cv(base)=2.74%
+    RandomForest      test MAPE= 4.64%  R2=0.907  | cv(aug)=4.70%  cv(base)=2.57%
+    GradientBoosting  test MAPE= 5.21%  R2=0.882  | cv(aug)=4.52%  cv(base)=2.65%
+    XGBoost           test MAPE= 5.23%  R2=0.880  | cv(aug)=4.51%  cv(base)=2.53%
+    ANN               test MAPE= 5.81%  R2=0.874  | cv(aug)=5.03%  cv(base)=4.60%
+    Polynomial        test MAPE= 6.11%  R2=0.850  | cv(aug)=4.86%  cv(base)=3.42%
+    GaussianProcess   test MAPE= 6.28%  R2=0.849  | cv(aug)=5.21%  cv(base)=2.90%
+    Linear            test MAPE= 8.28%  R2=0.727  | cv(aug)=6.69%  cv(base)=6.19%
+
+==============================================================
+Dataset: unpatched  |  baseline=72 train=57 test=15  aug factor=4.17x
+==============================================================
+  Precomputing fold data (leakage-free augmentation, once per fold)...
+
+  [Linear] 1 configs
+    [1/1] MAPE=9.30% R2=0.912
+    (0.0s)
+
+  [Polynomial] 6 configs
+    [1/6] MAPE=6.27% R2=0.964
+    [2/6] MAPE=6.22% R2=0.964
+    [3/6] MAPE=6.37% R2=0.959
+    [4/6] MAPE=8.26% R2=0.932
+    [5/6] MAPE=7.74% R2=0.941
+    [6/6] MAPE=5.94% R2=0.965
+    (0.1s)
+
+  [SVR] 6 configs
+    [1/6] MAPE=12.80% R2=0.839
+    [2/6] MAPE=12.48% R2=0.842
+    [3/6] MAPE=8.74% R2=0.932
+    [4/6] MAPE=9.02% R2=0.930
+    [5/6] MAPE=9.08% R2=0.915
+    [6/6] MAPE=9.29% R2=0.915
+    (0.1s)
+
+  [RandomForest] 18 configs
+    [4/18] MAPE=10.04% R2=0.906
+    [8/18] MAPE=10.00% R2=0.904
+    [12/18] MAPE=10.00% R2=0.904
+    [16/18] MAPE=9.91% R2=0.908
+    (22.4s)
+
+  [GradientBoosting] 8 configs
+    [2/8] MAPE=7.71% R2=0.935
+    [4/8] MAPE=7.59% R2=0.957
+    [6/8] MAPE=7.37% R2=0.958
+    [8/8] MAPE=7.77% R2=0.953
+    (1.9s)
+
+  [XGBoost] 12 configs
+    [3/12] MAPE=11.31% R2=0.880
+    [6/12] MAPE=8.32% R2=0.949
+    [9/12] MAPE=7.96% R2=0.954
+    [12/12] MAPE=11.41% R2=0.880
+    (2.5s)
+
+  [LightGBM] 12 configs
+    [3/12] MAPE=9.54% R2=0.885
+    [6/12] MAPE=8.41% R2=0.941
+    [9/12] MAPE=8.63% R2=0.929
+    [12/12] MAPE=8.39% R2=0.946
+    (7.8s)
+
+  [GaussianProcess] 2 configs
+    [1/2] MAPE=6.35% R2=0.962
+    [2/2] MAPE=6.35% R2=0.962
+    (1.5s)
+
+  [ANN] 50 configs
+    [12/50] MAPE=9.28% R2=0.922
+    [24/50] MAPE=8.10% R2=0.926
+    [36/50] MAPE=5.61% R2=0.956
+    [48/50] MAPE=44.76% R2=-0.276
+    (606.9s)
+
+  [KAN] 1 configs
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+    [1/1] MAPE=7.28% R2=0.945
+    (119.2s)
+  -> Linear           cvAug=9.30%  cvBase=9.08%  test=18.59% (R2=0.893)
+  -> Polynomial       cvAug=5.94%  cvBase=8.71%  test=6.38% (R2=0.984)
+  -> SVR              cvAug=8.74%  cvBase=8.10%  test=7.46% (R2=0.971)
+  -> RandomForest     cvAug=9.91%  cvBase=12.19%  test=4.56% (R2=0.988)
+  -> GradientBoosting cvAug=7.37%  cvBase=4.96%  test=4.48% (R2=0.984)
+  -> XGBoost          cvAug=7.81%  cvBase=6.10%  test=3.18% (R2=0.994)
+  -> LightGBM         cvAug=8.39%  cvBase=19.68%  test=4.99% (R2=0.988)
+  -> GaussianProcess  cvAug=6.35%  cvBase=3.15%  test=4.82% (R2=0.984)
+  -> ANN              cvAug=4.78%  cvBase=9.23%  test=5.37% (R2=0.981)
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+checkpoint directory created: ./model
+saving model version 0.0
+  -> KAN              cvAug=7.28%  cvBase=8.28%  test=8.25% (R2=0.971)
+
+  === Model comparison (unpatched) — sorted by hold-out test MAPE ===
+    XGBoost           test MAPE= 3.18%  R2=0.994  | cv(aug)=7.81%  cv(base)=6.10%
+    GradientBoosting  test MAPE= 4.48%  R2=0.984  | cv(aug)=7.37%  cv(base)=4.96%
+    RandomForest      test MAPE= 4.56%  R2=0.988  | cv(aug)=9.91%  cv(base)=12.19%
+    GaussianProcess   test MAPE= 4.82%  R2=0.984  | cv(aug)=6.35%  cv(base)=3.15%
+    LightGBM          test MAPE= 4.99%  R2=0.988  | cv(aug)=8.39%  cv(base)=19.68%
+    ANN               test MAPE= 5.37%  R2=0.981  | cv(aug)=4.78%  cv(base)=9.23%
+    Polynomial        test MAPE= 6.38%  R2=0.984  | cv(aug)=5.94%  cv(base)=8.71%
+    SVR               test MAPE= 7.46%  R2=0.971  | cv(aug)=8.74%  cv(base)=8.10%
+    KAN               test MAPE= 8.25%  R2=0.971  | cv(aug)=7.28%  cv(base)=8.28%
+    Linear            test MAPE=18.59%  R2=0.893  | cv(aug)=9.30%  cv(base)=9.08%
+
+============================================================
+Feature importance — patched
+============================================================
+
+  ANN (permutation importance, real baseline):
+    Material                     dMAPE=12.057%   ( 41.7%)
+    Material Thickness (mm)      dMAPE=11.110%   ( 38.4%)
+    Test Temperature (F)         dMAPE= 3.302%   ( 11.4%)
+    Patch Thickness (mm)         dMAPE= 1.429%   (  4.9%)
+    Patch                        dMAPE= 1.022%   (  3.5%)
+
+  SVR (permutation importance, real baseline):
+    Material Thickness (mm)      dMAPE= 9.667%   ( 41.5%)
+    Material                     dMAPE= 8.347%   ( 35.8%)
+    Test Temperature (F)         dMAPE= 3.633%   ( 15.6%)
+    Patch Thickness (mm)         dMAPE= 1.354%   (  5.8%)
+    Patch                        dMAPE= 0.289%   (  1.2%)
+
+  Saved patched_feature_importance.csv
+
+============================================================
+Feature importance — unpatched
+============================================================
+
+  ANN (permutation importance, real baseline):
+    Material Thickness (mm)      dMAPE=25.372%   ( 35.2%)
+    Crack Length (mm)            dMAPE=23.343%   ( 32.4%)
+    Material                     dMAPE=23.182%   ( 32.2%)
+    Test Temperature (F)         dMAPE= 0.107%   (  0.1%)
+
+  XGBoost (permutation importance, real baseline):
+    Material Thickness (mm)      dMAPE=29.204%   ( 41.3%)
+    Crack Length (mm)            dMAPE=21.541%   ( 30.5%)
+    Material                     dMAPE=19.817%   ( 28.0%)
+    Test Temperature (F)         dMAPE= 0.135%   (  0.2%)
+
+  Saved unpatched_feature_importance.csv
+
+==================================================
+Figures for patched
+==================================================
+  Saved patched_model_comparison.pdf
+  Saved patched_ann_grid_bar.pdf
+  Saved patched_all_models_bar.pdf (hold-out, Support Vector Regression)
+  Saved patched_scatter.pdf (Support Vector Regression)
+  Saved patched_feature_importance.pdf
+
+==================================================
+Figures for unpatched
+==================================================
+  Saved unpatched_model_comparison.pdf
+  Saved unpatched_ann_grid_bar.pdf
+  Saved unpatched_all_models_bar.pdf (hold-out, XGBoost)
+  Saved unpatched_scatter.pdf (XGBoost)
+  Saved unpatched_feature_importance.pdf
+[2026-07-07 20:04:31] [INFO] ============================================================
+[2026-07-07 20:04:31] [INFO] ANN EXPERIMENT PIPELINE
+[2026-07-07 20:04:31] [INFO] ============================================================
+[2026-07-07 20:04:31] [INFO] Dataset: both
+[2026-07-07 20:04:31] [INFO] Config: config.yaml
+[2026-07-07 20:04:31] [INFO] Output: outputs
+[2026-07-07 20:04:31] [INFO] ------------------------------------------------------------
+[2026-07-07 20:04:31] [INFO] Starting stage: Preprocessing
+[2026-07-07 20:04:32] [INFO] Completed Preprocessing in 0.8s
+[2026-07-07 20:04:32] [INFO] ------------------------------------------------------------
+[2026-07-07 20:04:32] [INFO] Starting stage: Synthetic Data Generation
+[2026-07-07 20:04:34] [INFO] Completed Synthetic Data Generation in 2.2s
+[2026-07-07 20:04:34] [INFO] ------------------------------------------------------------
+[2026-07-07 20:04:34] [INFO] Starting stage: Training & Grid Search
+[2026-07-07 20:34:48] [INFO] Completed Training & Grid Search in 1814.0s
+[2026-07-07 20:34:48] [INFO] ------------------------------------------------------------
+[2026-07-07 20:34:48] [INFO] Starting stage: Feature Importance
+[2026-07-07 20:35:02] [INFO] Completed Feature Importance in 13.8s
+[2026-07-07 20:35:02] [INFO] ------------------------------------------------------------
+[2026-07-07 20:35:02] [INFO] Starting stage: Visualization
+[2026-07-07 20:35:05] [INFO] Completed Visualization in 2.5s
+[2026-07-07 20:35:05] [INFO] ------------------------------------------------------------
+[2026-07-07 20:35:05] [INFO] Pipeline completed in 1833.3s (30.6 min)
+[2026-07-07 20:35:05] [INFO] ============================================================
+[2026-07-07 20:35:05] [INFO] 
+Generated files:
+[2026-07-07 20:35:05] [INFO]   - .gitkeep
+[2026-07-07 20:35:05] [INFO]   - patched_all_models_bar.pdf
+[2026-07-07 20:35:05] [INFO]   - patched_all_results.xlsx
+[2026-07-07 20:35:05] [INFO]   - patched_ann_grid.xlsx
+[2026-07-07 20:35:05] [INFO]   - patched_ann_grid_bar.pdf
+[2026-07-07 20:35:05] [INFO]   - patched_augmented.csv
+[2026-07-07 20:35:05] [INFO]   - patched_baseline.csv
+[2026-07-07 20:35:05] [INFO]   - patched_baseline_test.csv
+[2026-07-07 20:35:05] [INFO]   - patched_baseline_train.csv
+[2026-07-07 20:35:05] [INFO]   - patched_best_configs.json
+[2026-07-07 20:35:05] [INFO]   - patched_feature_importance.csv
+[2026-07-07 20:35:05] [INFO]   - patched_feature_importance.pdf
+[2026-07-07 20:35:05] [INFO]   - patched_feature_info.json
+[2026-07-07 20:35:05] [INFO]   - patched_final_ann.pt
+[2026-07-07 20:35:05] [INFO]   - patched_final_preprocessor.pkl
+[2026-07-07 20:35:05] [INFO]   - patched_model_comparison.pdf
+[2026-07-07 20:35:05] [INFO]   - patched_model_comparison.xlsx
+[2026-07-07 20:35:05] [INFO]   - patched_preprocessor.pkl
+[2026-07-07 20:35:05] [INFO]   - patched_quality_report.json
+[2026-07-07 20:35:05] [INFO]   - patched_scatter.pdf
+[2026-07-07 20:35:05] [INFO]   - patched_synthetic_distributions.png
+[2026-07-07 20:35:05] [INFO]   - patched_test_predictions.csv
+[2026-07-07 20:35:05] [INFO]   - pipeline_run.log
+[2026-07-07 20:35:05] [INFO]   - unpatched_all_models_bar.pdf
+[2026-07-07 20:35:05] [INFO]   - unpatched_all_results.xlsx
+[2026-07-07 20:35:05] [INFO]   - unpatched_ann_grid.xlsx
+[2026-07-07 20:35:05] [INFO]   - unpatched_ann_grid_bar.pdf
+[2026-07-07 20:35:05] [INFO]   - unpatched_augmented.csv
+[2026-07-07 20:35:05] [INFO]   - unpatched_baseline.csv
+[2026-07-07 20:35:05] [INFO]   - unpatched_baseline_test.csv
+[2026-07-07 20:35:05] [INFO]   - unpatched_baseline_train.csv
+[2026-07-07 20:35:05] [INFO]   - unpatched_best_configs.json
+[2026-07-07 20:35:05] [INFO]   - unpatched_feature_importance.csv
+[2026-07-07 20:35:05] [INFO]   - unpatched_feature_importance.pdf
+[2026-07-07 20:35:05] [INFO]   - unpatched_feature_info.json
+[2026-07-07 20:35:05] [INFO]   - unpatched_final_ann.pt
+[2026-07-07 20:35:05] [INFO]   - unpatched_final_preprocessor.pkl
+[2026-07-07 20:35:05] [INFO]   - unpatched_model_comparison.pdf
+[2026-07-07 20:35:05] [INFO]   - unpatched_model_comparison.xlsx
+[2026-07-07 20:35:05] [INFO]   - unpatched_preprocessor.pkl
+[2026-07-07 20:35:05] [INFO]   - unpatched_quality_report.json
+[2026-07-07 20:35:05] [INFO]   - unpatched_scatter.pdf
+[2026-07-07 20:35:05] [INFO]   - unpatched_synthetic_distributions.png
+[2026-07-07 20:35:05] [INFO]   - unpatched_test_predictions.csv
+[2026-07-07 20:35:05] [INFO] 
+Log saved to outputs/pipeline_log_20260707_203505.txt

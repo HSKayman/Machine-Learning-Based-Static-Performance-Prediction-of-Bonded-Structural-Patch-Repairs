@@ -9,18 +9,20 @@
     "Material"
   ],
   "target_column": "Failure Load (kN)",
-  "source_column": "Unnamed: 5",
-  "feature_order": [
+  "source_column": "Source",
+  "encoding": "one-hot",
+  "feature_names": [
     "Crack Length (mm)",
     "Test Temperature (F)",
     "Material Thickness (mm)",
-    "Material"
+    "Material_A36 Steel",
+    "Material_Al 6061"
   ],
-  "n_features": 4,
-  "categorical_mappings": {
-    "Material": {
-      "0": "A36 Steel",
-      "1": "Al 6061"
-    }
+  "n_features": 5,
+  "categorical_values": {
+    "Material": [
+      "A36 Steel",
+      "Al 6061"
+    ]
   }
 }

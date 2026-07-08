@@ -1,310 +1,332 @@
-"""
-Visualization module for generating publication-ready graphs.
-One graph per dataset.
-"""
+# Visualization module for generating publication-ready graphs.
+# One graph per dataset.
+
+import argparse
+import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.ticker import MaxNLocator
-from pathlib import Path
-from typing import Dict, Any, Optional
 import yaml
-import torch
-import warnings
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-warnings.filterwarnings('ignore')
-
-# quality settings - increased font sizes and bold for visibility
 plt.rcParams.update({
-    'font.family': 'serif',
-    'font.serif': ['Times New Roman', 'DejaVu Serif', 'serif'],
-    'font.size': 14,
-    'font.weight': 'bold',
-    'axes.labelsize': 18,
-    'axes.titlesize': 20,
-    'axes.labelweight': 'bold',
-    'axes.titleweight': 'bold',
-    'xtick.labelsize': 14,
-    'ytick.labelsize': 14,
-    'legend.fontsize': 14,
-    'figure.titlesize': 22,
-    'figure.titleweight': 'bold',
-    'axes.linewidth': 1.2,
-    'grid.linewidth': 0.6,
-    'lines.linewidth': 2.0,
-    'lines.markersize': 8,
+    "font.family": "serif",
+    "font.size": 12,
+    "axes.labelsize": 14,
+    "axes.labelweight": "bold",
+    "axes.linewidth": 1.8,
+    "axes.titlesize": 14,
+    "axes.titleweight": "bold",
+    "xtick.major.width": 1.8,
+    "ytick.major.width": 1.8,
+    "xtick.major.size": 6,
+    "ytick.major.size": 6,
+    "figure.dpi": 120,
 })
 
-# Color palette (colorblind-friendly)
-COLORS = {
-    'primary': '#2E86AB',     # Steel blue
-    'secondary': '#A23B72',   # Raspberry
-    'accent': '#F18F01',      # Orange
-    'success': '#C73E1D',     # Red
-    'neutral': '#3B3B3B',     # Dark gray
-    'light': '#E8E8E8',       # Light gray
-    'grid': '#CCCCCC'
+
+def _style_axes(ax, xlabel=None, ylabel=None, tick_labelsize=12):
+    # Publication styling: bold axis labels, bold tick labels, thicker spines.
+    for spine in ax.spines.values():
+        spine.set_linewidth(1.8)
+    ax.tick_params(axis="both", width=1.8, length=6, labelsize=tick_labelsize)
+    for label in ax.get_xticklabels() + ax.get_yticklabels():
+        label.set_fontweight("bold")
+    if xlabel is not None:
+        ax.set_xlabel(xlabel, fontweight="bold", fontsize=20)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel, fontweight="bold", fontsize=20)
+
+COLORS = {"primary": "#2E86AB", "secondary": "#A23B72", "accent": "#F18F01",
+          "danger": "#C73E1D", "neutral": "#3B3B3B", "light": "#E8E8E8"}
+
+MODEL_DISPLAY = {
+    "Linear": "Linear Regression",
+    "Polynomial": "Polynomial Regression",
+    "SVR": "Support Vector Regression",
+    "RandomForest": "Random Forest",
+    "GradientBoosting": "Gradient Boosting",
+    "XGBoost": "XGBoost",
+    "LightGBM": "LightGBM",
+    "GaussianProcess": "Gaussian Process",
+    "ANN": "ANN",
+    "KAN": "KAN",
 }
 
-# Load experiment results from Excel.
-def load_results(output_dir: Path, dataset_type: str) -> Optional[pd.DataFrame]:
 
-    results_path = output_dir / f"{dataset_type}_results.xlsx"
-    if results_path.exists():
-        return pd.read_excel(results_path)
-    return None
+def _best_model_row(comp: pd.DataFrame) -> pd.Series:
+    # Return the hold-out test best-performing model row.
+    return comp.sort_values("test_mape", ascending=True).iloc[0]
 
-#  Create a single professional figure combining:
-#     - Top configurations comparison (horizontal bar chart)
-#     - Actual vs Predicted scatter for best model
-def create_combined_figure(results_df: pd.DataFrame, 
-                           dataset_type: str,
-                           X: np.ndarray,
-                           y: np.ndarray,
-                           output_path: Path,
-                           config: Dict[str, Any]) -> None:
-   
-    dpi = config.get('figure_dpi', 300)
-    
-    # Sort by MAPE to get rankings
-    sorted_df = results_df.sort_values('mean_mape').reset_index(drop=True)
-    n_total = len(sorted_df)
-    
-    # Get top 5 (best), middle 5, and bottom 5 (worst) configurations
-    top_5 = sorted_df.head(5).copy()
-    
-    # Get middle 5 (centered around median)
-    mid_start = max(0, (n_total // 2) - 2)
-    mid_end = min(n_total, mid_start + 5)
-    middle_5 = sorted_df.iloc[mid_start:mid_end].copy()
-    
-    bottom_5 = sorted_df.tail(5).copy()
-    
-    # Combine: top 5 first, then middle 5, then bottom 5
-    combined_configs = pd.concat([top_5, middle_5, bottom_5], ignore_index=True)
-    
-    # Create separate figures for each plot
-    fig1, ax1 = plt.subplots(figsize=(10, 8))
-    fig2, ax2 = plt.subplots(figsize=(8, 8))
-    
-    # Left: Horizontal bar chart of top 5 + middle 5 + bottom 5 configurations 
-    y_positions = np.arange(len(combined_configs))
-    
-    # Create configuration labels with all parameters
+
+def _dpi(config):
+    # Read figure DPI from config with a publication default.
+    return config.get("visualization", {}).get("figure_dpi", 300)
+
+
+def model_comparison_fig(output_dir: Path, ds: str, dpi: int):
+    # Plot hold-out MAPE for all models with selection-CV markers.
+    path = output_dir / f"{ds}_model_comparison.xlsx"
+    if not path.exists():
+        return
+    df = pd.read_excel(path).sort_values("test_mape", ascending=True).reset_index(drop=True)
+    fig, ax = plt.subplots(figsize=(9, 6))
+    ypos = np.arange(len(df))
+    bars = ax.barh(ypos, df["test_mape"], color=COLORS["primary"], edgecolor=COLORS["neutral"], alpha=0.85)
+    bars[0].set_color(COLORS["accent"])
+    ax.scatter(df["cv_aug_mape"], ypos, color=COLORS["danger"], zorder=3, s=45,
+               label="Selection CV MAPE")
+    ax.set_yticks(ypos)
+    ax.set_yticklabels(df["model"])
+    ax.invert_yaxis()
+    _style_axes(ax, xlabel="Hold-out test MAPE (%)")
+    for label in ax.get_yticklabels():
+        label.set_fontweight("bold")
+    for i, (m, r2) in enumerate(zip(df["test_mape"], df["test_r2"])):
+        ax.text(m + 0.1, i, f"{m:.2f}%  (R²={r2:.2f})", va="center", fontsize=10, fontweight="bold")
+    leg = ax.legend(loc="lower right")
+    for text in leg.get_texts():
+        text.set_fontweight("bold")
+    ax.set_xlim(0, df["test_mape"].max() * 1.35)
+    ax.grid(True, axis="x", alpha=0.3, ls="--")
+    fig.tight_layout()
+    fig.savefig(output_dir / f"{ds}_model_comparison.pdf", dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved {ds}_model_comparison.pdf")
+
+
+def ann_grid_fig(output_dir: Path, ds: str, dpi: int):
+    # Plot top, middle, and bottom ANN configurations from the CV grid.
+    path = output_dir / f"{ds}_ann_grid.xlsx"
+    if not path.exists():
+        return
+    df = pd.read_excel(path).sort_values("mean_mape").reset_index(drop=True)
+    n = len(df)
+    top = df.head(5)
+    mid_start = max(0, n // 2 - 2)
+    middle = df.iloc[mid_start:mid_start + 5]
+    bottom = df.tail(5)
+    combo = pd.concat([top, middle, bottom], ignore_index=True)
+
     labels = []
-    for _, row in combined_configs.iterrows():
-        arch = row['architecture']
-        # Format architecture (hidden layers)
-        if isinstance(arch, str):
-            arch_short = arch.replace('[', '').replace(']', '').replace(' ', '')
-        else:
-            arch_short = str(arch)
-        
-        # Format: Activation | Arch | lr | dropout
-        act = row['activation'][:4]  # relu, leak, selu, etc.
-        lr = row['learning_rate']
-        dr = row['dropout_rate']
-        labels.append(f"{act} | {arch_short} | lr={lr} | dr={dr}")
-    
-    # Create color array: blue for top 5, purple for middle 5, red for bottom 5
-    colors = ([COLORS['primary']] * 5 + 
-              [COLORS['secondary']] * len(middle_5) + 
-              [COLORS['success']] * 5)
-    
-    # Bar chart
-    bars = ax1.barh(y_positions, combined_configs['mean_mape'], 
-                    xerr=combined_configs['std_mape'],
-                    color=colors, 
-                    edgecolor=COLORS['neutral'],
-                    alpha=0.85,
-                    capsize=3,
-                    error_kw={'linewidth': 1})
-    
-    # Highlight best (rank 1)
-    bars[0].set_color(COLORS['accent'])
-    
-    ax1.set_yticks(y_positions)
-    ax1.set_yticklabels(labels)
-    ax1.tick_params(axis='y', labelsize=12)  # Adjusted font for longer labels
-    ax1.set_xlabel('Mean Absolute Percentage Error (%)')
-    #ax1.set_title('Top 5, Middle 5 & Bottom 5 Configurations', fontweight='bold', pad=10)
-    ax1.invert_yaxis()  # Best at top
-    ax1.set_xlim(0, combined_configs['mean_mape'].max() * 1.15)
-    
-    # Add horizontal separator lines between groups
-    ax1.axhline(y=4.5, color=COLORS['neutral'], linestyle='--', linewidth=1.5, alpha=0.7)
-    ax1.axhline(y=4.5 + len(middle_5), color=COLORS['neutral'], linestyle='--', linewidth=1.5, alpha=0.7)
-    
-    # Add value labels
-    for i, (mape, std) in enumerate(zip(combined_configs['mean_mape'], combined_configs['std_mape'])):
-        ax1.text(mape + std + 0.3, i, f'{mape:.2f}%', 
-                 va='center', fontsize=12, fontweight='bold', color=COLORS['neutral'])
-    
-    # Add R^2 annotation for best (mean R² from CV results)
-    best_r2 = top_5.iloc[0]['mean_r2']
-    ax1.annotate(f'R² = {best_r2:.4f}', 
-                 xy=(0.98, 0.02), xycoords='axes fraction',
-                 ha='right', va='bottom',
-                 fontsize=14, fontweight='bold',
-                 bbox=dict(boxstyle='round,pad=0.4', facecolor=COLORS['light'], 
-                          edgecolor=COLORS['neutral'], alpha=0.8))
-    
-    # Add legend for colors
+    for _, r in combo.iterrows():
+        p = json.loads(r["params"])
+        arch = str(p["architecture"]).replace(" ", "")
+        labels.append(f"{p['activation'][:4]} | {arch} | lr={p['learning_rate']} | dr={p['dropout_rate']}")
+
+    colors = [COLORS["primary"]] * 5 + [COLORS["secondary"]] * len(middle) + [COLORS["danger"]] * 5
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ypos = np.arange(len(combo))
+    bars = ax.barh(ypos, combo["mean_mape"], xerr=combo["std_mape"], color=colors,
+                   edgecolor=COLORS["neutral"], alpha=0.85, capsize=3)
+    bars[0].set_color(COLORS["accent"])
+    ax.set_yticks(ypos)
+    ax.set_yticklabels(labels, fontsize=9, fontweight="bold")
+    ax.invert_yaxis()
+    _style_axes(ax, xlabel="Selection CV MAPE (%)", tick_labelsize=10)
+    for i, (m, s) in enumerate(zip(combo["mean_mape"], combo["std_mape"])):
+        ax.text(m + s + 0.1, i, f"{m:.2f}%", va="center", fontsize=9, fontweight="bold")
     from matplotlib.patches import Patch
-    legend_elements = [
-        Patch(facecolor=COLORS['accent'], edgecolor=COLORS['neutral'], label='Best (#1)'),
-        Patch(facecolor=COLORS['primary'], edgecolor=COLORS['neutral'], label='Top 5'),
-        Patch(facecolor=COLORS['secondary'], edgecolor=COLORS['neutral'], label='Middle 5'),
-        Patch(facecolor=COLORS['success'], edgecolor=COLORS['neutral'], label='Bottom 5')
-    ]
-    ax1.legend(handles=legend_elements, loc='upper right', fontsize=12, framealpha=0.9)
-    
-    ax1.grid(True, axis='x', alpha=0.3, linestyle='--')
-    ax1.set_axisbelow(True)
-    
-    # Use top_5 for the best model in scatter plot
-    top_configs = top_5
-    
-    # Right: Actual vs Predicted scatter 
-    # Load best model and make predictions
-    best_config = top_configs.iloc[0]
-    
+    leg = ax.legend(handles=[
+        Patch(facecolor=COLORS["accent"], label="Best"),
+        Patch(facecolor=COLORS["primary"], label="Top 5"),
+        Patch(facecolor=COLORS["secondary"], label="Middle 5"),
+        Patch(facecolor=COLORS["danger"], label="Bottom 5"),
+    ], loc="lower right", fontsize=9)
+    for text in leg.get_texts():
+        text.set_fontweight("bold")
+    ax.grid(True, axis="x", alpha=0.3, ls="--")
+    fig.tight_layout()
+    fig.savefig(output_dir / f"{ds}_ann_grid_bar.pdf", dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved {ds}_ann_grid_bar.pdf")
+
+
+def _short_conf_label(model: str, params_str: str) -> str:
+    # Compact 'Model | hyperparameters' label from a params JSON string.
     try:
-        from train import DynamicANN
-        import ast
-        
-        model_path = output_path.parent / f"{dataset_type}_best_model.pt"
-        
-        if model_path.exists():
-            checkpoint = torch.load(model_path, map_location='cpu', weights_only=False)
-            # Use config from the saved checkpoint (not from results DataFrame)
-            saved_config = checkpoint['config']
-            arch = ast.literal_eval(saved_config['architecture']) if isinstance(saved_config['architecture'], str) else saved_config['architecture']
-            
-            model = DynamicANN(
-                input_dim=checkpoint.get('input_dim', X.shape[1]),
-                hidden_layers=arch,
-                activation=saved_config['activation'],
-                dropout_rate=saved_config['dropout_rate']
-            )
-            model.load_state_dict(checkpoint['model_state_dict'])
-            model.eval()
-            
-            with torch.no_grad():
-                X_tensor = torch.FloatTensor(X)
-                y_pred = model(X_tensor).squeeze().numpy()
-        else:
-            # If no model, use dummy predictions for visualization
-            y_pred = y + np.random.normal(0, y.std() * 0.1, len(y))
-    except Exception as e:
-        print(f"    Warning: Could not load model for predictions: {e}")
-        y_pred = y + np.random.normal(0, y.std() * 0.1, len(y))
-    
-    # Scatter plot
-    ax2.scatter(y, y_pred, c=COLORS['primary'], alpha=0.6, 
-                edgecolors=COLORS['neutral'], linewidths=0.8, s=70)
-    
-    # Perfect prediction line
-    min_val = min(y.min(), y_pred.min())
-    max_val = max(y.max(), y_pred.max())
-    margin = (max_val - min_val) * 0.05
-    line_range = [min_val - margin, max_val + margin]
-    ax2.plot(line_range, line_range, 'k--', linewidth=2.0, alpha=0.7, label='Perfect Prediction')
-    
-    # ±10% error bands
-    ax2.fill_between(line_range, 
-                     [v * 0.9 for v in line_range], 
-                     [v * 1.1 for v in line_range],
-                     alpha=0.3, color=COLORS['accent'], label='±10% Error Band')
-    
-    ax2.set_xlabel('Actual Failure Load (kN)')
-    ax2.set_ylabel('Predicted Failure Load (kN)')
-    # ax2.set_title('Actual vs Predicted (Best Model)', fontweight='bold', pad=10)
-    ax2.set_xlim(line_range)
-    ax2.set_ylim(line_range)
-    ax2.set_aspect('equal', adjustable='box')
-    ax2.legend(loc='lower right', fontsize=14, framealpha=0.9)
-    ax2.grid(True, alpha=0.3, linestyle='--')
-    
-    # Add metrics annotation (use CV mean values from results for consistency)
-    mape_val = best_config['mean_mape']
-    r2_val = best_config['mean_r2']
-    
-    metrics_text = f'MAPE: {mape_val:.2f}%\nR²: {r2_val:.4f}'
-    ax2.annotate(metrics_text, 
-                 xy=(0.05, 0.95), xycoords='axes fraction',
-                 ha='left', va='top',
-                 fontsize=16, fontweight='bold',
-                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', 
-                          edgecolor=COLORS['neutral'], alpha=0.9))
-    
-    # Adjust layout and save figures separately
-    fig1.tight_layout()
-    fig2.tight_layout()
-    
-    # Save figures
-    bar_chart_path = output_path.parent / f"{dataset_type}_bar_chart.pdf"
-    scatter_path = output_path.parent / f"{dataset_type}_scatter.pdf"
-    
-    fig1.savefig(bar_chart_path, dpi=dpi, bbox_inches='tight', 
-                 facecolor='white', edgecolor='none')
-    fig2.savefig(scatter_path, dpi=dpi, bbox_inches='tight', 
-                 facecolor='white', edgecolor='none')
-    
-    plt.close(fig1)
-    plt.close(fig2)
-    
-    print(f"  Saved bar chart to {bar_chart_path}")
-    print(f"  Saved scatter plot to {scatter_path}")
+        p = json.loads(params_str) if params_str else {}
+    except Exception:
+        p = {}
+    if model == "ANN":
+        arch = str(p.get("architecture", "")).replace(" ", "")
+        act = str(p.get("activation", ""))[:4]
+        return f"ANN | {arch} | {act} | dr={p.get('dropout_rate', 0)}"
+    if model == "KAN":
+        w = str(p.get("width", "")).replace(" ", "")
+        return f"KAN | w={w} | g={p.get('grid_size')} | k={p.get('spline_order')}"
+    if model == "Linear":
+        return "Linear | OLS"
+    if model == "Polynomial":
+        return f"Poly | deg={p.get('degree')} | a={p.get('alpha')}"
+    if model == "SVR":
+        return f"SVR | C={p.get('C')} | eps={p.get('epsilon')}"
+    if model == "GaussianProcess":
+        return f"GP | noise={p.get('noise')}"
+    # tree ensembles
+    d = p.get("max_depth")
+    lr = p.get("learning_rate")
+    lead = {"RandomForest": "RF", "GradientBoosting": "GB",
+            "XGBoost": "XGB", "LightGBM": "LGBM"}.get(model, model)
+    parts = [f"n={p.get('n_estimators')}", f"d={d}"]
+    if lr is not None:
+        parts.append(f"lr={lr}")
+    return f"{lead} | " + " | ".join(parts)
 
-# Run visualization as standalone script.
+
+def all_conf_bar_fig(output_dir: Path, ds: str, dpi: int):
+    # Hold-out test MAPE for all ten models (best config per model).
+    #
+    # Uses the same metrics as Table model_comparison and the scatter plot so
+    # bar chart, table, and scatter stay consistent. CV results remain in the
+    # appendix (tab:patched_allconfigs / tab:unpatched_allconfigs).
+    #
+    path = output_dir / f"{ds}_model_comparison.xlsx"
+    if not path.exists():
+        return
+    df = pd.read_excel(path).sort_values("test_mape", ascending=True).reset_index(drop=True)
+    n = len(df)
+    # Top 3, middle 4, bottom 3 (10 models total)
+    top_n, mid_n, bot_n = 3, 4, 3
+    top = df.head(top_n)
+    middle = df.iloc[top_n:top_n + mid_n]
+    bottom = df.tail(bot_n)
+    combo = pd.concat([top, middle, bottom], ignore_index=True)
+
+    labels = [_short_conf_label(r["model"], r["params"]) for _, r in combo.iterrows()]
+    colors = ([COLORS["accent"]] + [COLORS["primary"]] * (top_n - 1)
+              + [COLORS["secondary"]] * mid_n + [COLORS["danger"]] * bot_n)
+
+    fig, ax = plt.subplots(figsize=(11, max(6, len(combo) * 0.55 + 1)))
+    ypos = np.arange(len(combo))
+    bars = ax.barh(ypos, combo["test_mape"], color=colors,
+                   edgecolor=COLORS["neutral"], alpha=0.85)
+    ax.set_yticks(ypos)
+    ax.set_yticklabels(labels, fontsize=9, fontweight="bold")
+    ax.invert_yaxis()
+    _style_axes(ax, xlabel="Hold-out test MAPE (%)", tick_labelsize=11)
+    xmax = combo["test_mape"].max() * 1.35
+    ax.set_xlim(0, xmax)
+    for i, (_, r) in enumerate(combo.iterrows()):
+        ax.text(r["test_mape"] + xmax * 0.01, i,
+                f"{r['test_mape']:.2f}%  (R\u00b2={r['test_r2']:.3f})",
+                va="center", fontsize=9, fontweight="bold", color=COLORS["neutral"])
+    best = combo.iloc[0]
+    best_name = MODEL_DISPLAY.get(best["model"], best["model"])
+    ax.text(0.98, 0.93,
+            f"Best: {best_name}\nMAPE={best['test_mape']:.2f}%\nR\u00b2={best['test_r2']:.3f}",
+            transform=ax.transAxes, ha="right", va="center", fontsize=11, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor=COLORS["neutral"]))
+    from matplotlib.patches import Patch
+    legend = ax.legend(handles=[
+        Patch(facecolor=COLORS["accent"], label="Best (#1)"),
+        Patch(facecolor=COLORS["primary"], label="Top 3"),
+        Patch(facecolor=COLORS["secondary"], label="Middle 4"),
+        Patch(facecolor=COLORS["danger"], label="Bottom 3"),
+    ], loc="center right", bbox_to_anchor=(1.0, 0.55), fontsize=9, framealpha=0.95)
+    for text in legend.get_texts():
+        text.set_fontweight("bold")
+    ax.grid(True, axis="x", alpha=0.3, ls="--")
+    ax.set_axisbelow(True)
+    fig.tight_layout()
+    fig.savefig(output_dir / f"{ds}_all_models_bar.pdf", dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved {ds}_all_models_bar.pdf (hold-out, {best_name})")
+
+
+def scatter_fig(output_dir: Path, ds: str, dpi: int):
+    # Plot actual vs predicted failure load for the best hold-out model.
+    pred_path = output_dir / f"{ds}_test_predictions.csv"
+    comp_path = output_dir / f"{ds}_model_comparison.xlsx"
+    if not pred_path.exists() or not comp_path.exists():
+        return
+    preds = pd.read_csv(pred_path)
+    comp = pd.read_excel(comp_path)
+    best = _best_model_row(comp)
+    model_key = best["model"]
+    pred_col = f"pred_{model_key}"
+    if pred_col not in preds.columns:
+        print(f"  Skipped {ds}_scatter.pdf — missing column {pred_col}")
+        return
+
+    model_label = MODEL_DISPLAY.get(model_key, model_key)
+    y = preds["y_true"].values
+    yp = preds[pred_col].values
+
+    lo = min(y.min(), yp.min())
+    hi = max(y.max(), yp.max())
+    m = (hi - lo) * 0.08
+    rng = [lo - m, hi + m]
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.scatter(y, yp, c=COLORS["primary"], s=80, alpha=0.8,
+               edgecolors=COLORS["neutral"], label="Hold-out test (real data)")
+    ax.plot(rng, rng, "k--", lw=2, alpha=0.7, label="Perfect prediction")
+    ax.fill_between(rng, [v * 0.9 for v in rng], [v * 1.1 for v in rng],
+                    color=COLORS["accent"], alpha=0.25, label="±10% error band")
+    ax.set_xlim(rng)
+    ax.set_ylim(rng)
+    ax.set_aspect("equal", "box")
+    _style_axes(ax, xlabel="Actual Failure Load (kN)", ylabel="Predicted Failure Load (kN)")
+    ax.annotate(f"{model_label}\nhold-out test\nMAPE={best['test_mape']:.2f}%\nR²={best['test_r2']:.3f}",
+                xy=(0.05, 0.95), xycoords="axes fraction", va="top",
+                fontsize=12, fontweight="bold",
+                bbox=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor=COLORS["neutral"]))
+    leg = ax.legend(loc="lower right", fontsize=10)
+    for text in leg.get_texts():
+        text.set_fontweight("bold")
+    ax.grid(True, alpha=0.3, ls="--")
+    fig.tight_layout()
+    fig.savefig(output_dir / f"{ds}_scatter.pdf", dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved {ds}_scatter.pdf ({model_label})")
+
+
+def importance_fig(output_dir: Path, ds: str, dpi: int):
+    # Plot permutation-importance bars for the ANN model.
+    path = output_dir / f"{ds}_feature_importance.csv"
+    if not path.exists():
+        return
+    df = pd.read_csv(path)
+    ann = df[df["model"] == "ANN"] if "ANN" in df["model"].values else df[df["model"] == df["model"].iloc[0]]
+    ann = ann.sort_values("delta_mape", ascending=True)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.barh(ann["feature"], ann["delta_mape"], color=COLORS["secondary"],
+            edgecolor=COLORS["neutral"], alpha=0.85)
+    _style_axes(ax, xlabel="Permutation importance (Δ MAPE, %)")
+    for label in ax.get_yticklabels():
+        label.set_fontweight("bold")
+    ax.grid(True, axis="x", alpha=0.3, ls="--")
+    fig.tight_layout()
+    fig.savefig(output_dir / f"{ds}_feature_importance.pdf", dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved {ds}_feature_importance.pdf")
+
+
 def main():
-
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='Generate visualization graphs')
-    parser.add_argument('--config', type=str, default='config.yaml')
-    parser.add_argument('--dataset', type=str, choices=['patched', 'unpatched', 'both'],
-                        default='both')
+    # CLI entry point for publication figure generation.
+    parser = argparse.ArgumentParser(description="Generate figures")
+    parser.add_argument("--config", type=str, default="config.yaml")
+    parser.add_argument("--dataset", type=str, choices=["patched", "unpatched", "both"], default="both")
     args = parser.parse_args()
-    
-    # Load config
-    with open(args.config, 'r') as f:
+
+    with open(args.config) as f:
         config = yaml.safe_load(f)
-    
-    viz_config = config.get('visualization', {})
-    output_dir = Path(config['data']['output_dir'])
-    
-    datasets = ['patched', 'unpatched'] if args.dataset == 'both' else [args.dataset]
-    
-    for dataset_type in datasets:
-        print(f"\n{'='*50}")
-        print(f"Generating visualization for {dataset_type}")
-        print('='*50)
-        
-        # Load results
-        results_df = load_results(output_dir, dataset_type)
-        
-        if results_df is None:
-            print(f"  No results found for {dataset_type}. Run training first.")
-            continue
-        
-        # Load data for scatter plot
-        data_file = output_dir / f"{dataset_type}_augmented.npz"
-        if not data_file.exists():
-            data_file = output_dir / f"{dataset_type}_processed.npz"
-        
-        data = np.load(data_file, allow_pickle=True)
-        X = data['X']
-        y = data['y']
-        
-        # Create figure
-        output_path = output_dir / f"{dataset_type}_visualization.pdf"
-        create_combined_figure(results_df, dataset_type, X, y, output_path, viz_config)
+    output_dir = Path(config["data"]["output_dir"])
+    dpi = _dpi(config)
+
+    datasets = ["patched", "unpatched"] if args.dataset == "both" else [args.dataset]
+    for ds in datasets:
+        print(f"\n{'=' * 50}\nFigures for {ds}\n{'=' * 50}")
+        model_comparison_fig(output_dir, ds, dpi)
+        ann_grid_fig(output_dir, ds, dpi)
+        all_conf_bar_fig(output_dir, ds, dpi)
+        scatter_fig(output_dir, ds, dpi)
+        importance_fig(output_dir, ds, dpi)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

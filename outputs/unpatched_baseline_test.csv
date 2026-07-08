@@ -1,0 +1,16 @@
+Material,Crack Length (mm),Test Temperature (F),Material Thickness (mm),Failure Load (kN),Source
+Al 6061,7.62,-60.0,2.0,5.99928295597414,calculated
+A36 Steel,4.948,145.0,2.0,14.7357794599294,calculated
+Al 6061,3.683,-60.0,4.65,25.5,experimental
+Al 6061,3.048,-60.0,2.0,11.9302429250598,calculated
+Al 6061,3.683,145.0,4.65,25.2,experimental
+A36 Steel,7.62,70.0,3.25,16.3578191495105,calculated
+A36 Steel,7.62,70.0,4.0,20.1327004917053,calculated
+A36 Steel,4.948,-60.0,2.0,14.367154582883,calculated
+Al 6061,3.048,145.0,3.15,18.4550591223905,calculated
+Al 6061,3.683,70.0,4.65,25.6,experimental
+Al 6061,7.62,145.0,2.0,5.89230123918275,calculated
+A36 Steel,3.683,70.0,3.25,27.0,experimental
+Al 6061,3.683,70.0,3.15,17.1,experimental
+A36 Steel,3.048,-60.0,3.25,31.7037082724303,calculated
+A36 Steel,3.683,145.0,3.25,27.6,experimental

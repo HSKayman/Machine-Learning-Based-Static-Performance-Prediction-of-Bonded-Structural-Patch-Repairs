@@ -1,0 +1,98 @@
+{
+  "passed": true,
+  "n_original": 72,
+  "n_synthetic": 228,
+  "ks_tests": {
+    "Crack Length (mm)": {
+      "statistic": 0.10526315789473684,
+      "p_value": 0.5409441916908977,
+      "passed": true
+    },
+    "Test Temperature (F)": {
+      "statistic": 0.08333333333333333,
+      "p_value": 0.8082271579111294,
+      "passed": true
+    },
+    "Material Thickness (mm)": {
+      "statistic": 0.06140350877192982,
+      "p_value": 0.9769953234238767,
+      "passed": true
+    },
+    "Failure Load (kN)": {
+      "statistic": 0.09137426900584796,
+      "p_value": 0.7129236680132017,
+      "passed": true
+    }
+  },
+  "correlation_diff": 0.14587212882911896,
+  "distribution_stats": {
+    "Crack Length (mm)": {
+      "original": {
+        "mean": 4.634458333333333,
+        "std": 1.667297855538868,
+        "min": 3.048,
+        "max": 7.62
+      },
+      "synthetic": {
+        "mean": 4.743074561403508,
+        "std": 1.6173064676415343,
+        "min": 3.048,
+        "max": 7.62
+      }
+    },
+    "Test Temperature (F)": {
+      "original": {
+        "mean": 51.666666666666664,
+        "std": 85.28328931637027,
+        "min": -60.0,
+        "max": 145.0
+      },
+      "synthetic": {
+        "mean": 51.68859649122807,
+        "std": 76.9081748475018,
+        "min": -60.0,
+        "max": 145.0
+      }
+    },
+    "Material Thickness (mm)": {
+      "original": {
+        "mean": 3.1812500000000004,
+        "std": 0.8447617173824402,
+        "min": 2.0,
+        "max": 4.65
+      },
+      "synthetic": {
+        "mean": 3.172587719298245,
+        "std": 0.880618958449498,
+        "min": 2.0,
+        "max": 4.65
+      }
+    },
+    "Failure Load (kN)": {
+      "original": {
+        "mean": 20.12629196019664,
+        "std": 8.224438908208162,
+        "min": 5.89230123918275,
+        "max": 40.0361192106021
+      },
+      "synthetic": {
+        "mean": 19.457738015713435,
+        "std": 8.186506193531825,
+        "min": 5.89230123918275,
+        "max": 40.0361192106021
+      }
+    }
+  },
+  "categorical_distribution": {
+    "Material": {
+      "original": {
+        "A36 Steel": 0.5,
+        "Al 6061": 0.5
+      },
+      "synthetic": {
+        "Al 6061": 0.5570175438596491,
+        "A36 Steel": 0.44298245614035087
+      }
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "passed": true,
+  "n_original": 75,
+  "n_synthetic": 225,
+  "ks_tests": {
+    "Material Thickness (mm)": {
+      "statistic": 0.1511111111111111,
+      "p_value": 0.1457186622183579,
+      "passed": true
+    },
+    "Patch Thickness (mm)": {
+      "statistic": 0.04,
+      "p_value": 0.9999817792817838,
+      "passed": true
+    },
+    "Test Temperature (F)": {
+      "statistic": 0.08,
+      "p_value": 0.8515382633575802,
+      "passed": true
+    },
+    "Failure Load (kN)": {
+      "statistic": 0.14666666666666667,
+      "p_value": 0.16942608004247914,
+      "passed": true
+    }
+  },
+  "correlation_diff": 0.1306128058846587,
+  "distribution_stats": {
+    "Material Thickness (mm)": {
+      "original": {
+        "mean": 3.7219999999999995,
+        "std": 0.7018431333166864,
+        "min": 3.15,
+        "max": 4.65
+      },
+      "synthetic": {
+        "mean": 3.7184444444444438,
+        "std": 0.6810114443249743,
+        "min": 3.15,
+        "max": 4.65
+      }
+    },
+    "Patch Thickness (mm)": {
+      "original": {
+        "mean": 1.0284,
+        "std": 0.23322671952995153,
+        "min": 0.89,
+        "max": 1.64
+      },
+      "synthetic": {
+        "mean": 1.0296888888888889,
+        "std": 0.2407844158591559,
+        "min": 0.89,
+        "max": 1.64
+      }
+    },
+    "Test Temperature (F)": {
+      "original": {
+        "mean": 51.666666666666664,
+        "std": 85.25927600058625,
+        "min": -60.0,
+        "max": 145.0
+      },
+      "synthetic": {
+        "mean": 53.75555555555555,
+        "std": 75.95086391976545,
+        "min": -60.0,
+        "max": 145.0
+      }
+    },
+    "Failure Load (kN)": {
+      "original": {
+        "mean": 27.65866666666667,
+        "std": 5.044409625364347,
+        "min": 18.42,
+        "max": 34.3
+      },
+      "synthetic": {
+        "mean": 27.526998425728546,
+        "std": 4.741944920281911,
+        "min": 18.42,
+        "max": 34.3
+      }
+    }
+  },
+  "categorical_distribution": {
+    "Material": {
+      "original": {
+        "Al 6061": 0.68,
+        "A36 Steel": 0.32
+      },
+      "synthetic": {
+        "Al 6061": 0.7066666666666667,
+        "A36 Steel": 0.29333333333333333
+      }
+    },
+    "Patch": {
+      "original": {
+        "Glass-Fiber": 0.56,
+        "Carbon-Fiber": 0.44
+      },
+      "synthetic": {
+        "Glass-Fiber": 0.5466666666666666,
+        "Carbon-Fiber": 0.4533333333333333
+      }
+    }
+  }
+}

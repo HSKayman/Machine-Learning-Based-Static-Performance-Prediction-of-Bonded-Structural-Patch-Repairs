@@ -1,7 +1,5 @@
-"""
-Orchestrator for the ANN experiment pipeline.
-Runs all parts of the pipeline: preprocess -> synthetic -> train -> visualize
-"""
+# Orchestrator for the ANN experiment pipeline.
+# Runs all parts of the pipeline: preprocess -> synthetic -> train -> visualize
 
 import argparse
 import subprocess
@@ -12,10 +10,11 @@ from pathlib import Path
 from datetime import datetime
 import yaml
 
-# Orchestrates the full ANN training pipeline
 class PipelineOrchestrator:
+    # Orchestrates the full ANN training pipeline.
 
     def __init__(self, config_path: str = 'config.yaml'):
+        # Load config and prepare the output directory.
         self.config_path = config_path
         self.start_time = None
         self.log_lines = []
@@ -27,14 +26,15 @@ class PipelineOrchestrator:
         self.output_dir = Path(self.config['data']['output_dir'])
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Log a message with timestamp.
     def log(self, message: str, level: str = 'INFO') -> None:
+        # Log a message with timestamp.
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         log_msg = f"[{timestamp}] [{level}] {message}"
         print(log_msg)
         self.log_lines.append(log_msg)
     
     def runner(self, stage_name: str, script: str, args: list) -> bool:
+        # Run one pipeline stage subprocess and return whether it succeeded.
         self.log(f"Starting stage: {stage_name}")
         stage_start = time.time()
         
@@ -65,18 +65,18 @@ class PipelineOrchestrator:
             skip_synthetic: bool = False,
             skip_training: bool = False,
             skip_visualization: bool = False) -> bool:
-        """
-        Run the full pipeline.
-        
-        Args:
-            dataset: 'patched', 'unpatched', or 'both'
-            skip_synthetic: Skip synthetic data generation
-            skip_training: Skip training (use existing results)
-            skip_visualization: Skip visualization generation
-            
-        Returns:
-            True if all stages succeeded
-        """
+        #
+        # Run the full pipeline.
+        #
+        # Args:
+        # dataset: 'patched', 'unpatched', or 'both'
+        # skip_synthetic: Skip synthetic data generation
+        # skip_training: Skip training (use existing results)
+        # skip_visualization: Skip visualization generation
+        #
+        # Returns:
+        # True if all stages succeeded
+        #
         self.start_time = time.time()
         self.log("="*60)
         self.log("ANN EXPERIMENT PIPELINE")
@@ -125,7 +125,18 @@ class PipelineOrchestrator:
         else:
             self.log("Skipping training (using existing results)")
         
-        # Stage 4: Visualization
+        # Stage 4: Feature importance / evaluation
+        if not skip_training:
+            self.log("-"*60)
+            if not self.runner(
+                "Feature Importance",
+                "evaluate.py",
+                common_args
+            ):
+                self.log("Feature importance stage failed", 'ERROR')
+                success = False
+
+        # Stage 5: Visualization
         if not skip_visualization:
             self.log("-"*60)
             if not self.runner(
@@ -157,8 +168,8 @@ class PipelineOrchestrator:
         
         return success
 
-
 def main():
+    # CLI entry point for the full experiment pipeline.
     parser = argparse.ArgumentParser(
         description='Run the ANN experiment pipeline',
         formatter_class=argparse.RawDescriptionHelpFormatter,

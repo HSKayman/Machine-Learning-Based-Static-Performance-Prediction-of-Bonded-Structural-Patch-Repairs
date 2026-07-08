@@ -1,68 +1,100 @@
 # ANN Experiment Configuration
 # ============================
 
-# Data paths (relative to wbu folder)
 data:
   patched: "data/patched.xlsx"
   unpatched: "data/unpatched.xlsx"
   output_dir: "outputs"
 
-# Preprocessing settings
 preprocessing:
-  test_size: 0.2  # Hold-out test set ratio
+  test_size: 0.2          # real hold-out test fraction (never augmented)
   random_state: 42
 
-# Synthetic data generation (GMM - Gaussian Mixture Model)
+# Synthetic data generation (GMM oversampling)
 synthetic:
   enabled: true
-  target_samples: 300  # Target total samples after augmentation
-  n_components: 3  # Number of GMM components (clusters)
-  max_retries: 5  # Max attempts to pass quality check
+  target_samples: 300     # size of the deliverable augmented artifact
+  n_components: 3
+  max_retries: 5
   random_state: 42
-  
-  # Quality validation thresholds
+  snap_discrete: true     # snap near-discrete inputs to valid physical values
   quality:
-    ks_test_alpha: 0.05  # KS-test significance level (p-value threshold)
+    ks_test_alpha: 0.05
 
-# Training hyperparameters grid
+# Evaluation protocol
+evaluation:
+  k_folds: 5              # CV used for hyperparameter selection (leakage-free)
+  random_state: 42
+  augment_in_fold: true   # GMM fit on the training portion of each fold only
+
+# Model comparison grids
 training:
-  # Architectures to test (list of hidden layer sizes)
-  architectures:
-    - [64, 32, 16, 8]
-    - [128, 64, 32, 16, 8]
-    - [32, 16, 8]
-    - [64, 32, 16]
-    - [128, 64, 32]
-  
-  # Activation functions to test
-  activation_functions:
-    - relu
-    - leaky_relu
-    - elu
-    - tanh
-  
-  # Learning rates to test
-  learning_rates:
-    - 0.001
-    - 0.0005
-    - 0.0001
-  
-  # Dropout rates to test
-  dropout_rates:
-    - 0.0
-    - 0.1
-    - 0.2
-  
-  # Training settings
-  epochs: 2000
-  batch_size: 16
-  early_stopping_patience: 50
   k_folds: 5
   random_state: 42
 
-# Visualization settings
-visualization:
-  top_n_configs: 10  # Number of top configurations to show
-  figure_dpi: 300
-  style: "seaborn-v0_8-whitegrid"
+  linear: {}
 
+  polynomial:
+    degree: [2, 3]
+    alpha: [0.1, 1.0, 10.0]
+
+  svr:
+    kernel: [rbf]
+    C: [1.0, 10.0, 100.0]
+    epsilon: [0.1, 0.5]
+    gamma: [scale]
+
+  random_forest:
+    n_estimators: [100, 200, 300]
+    max_depth: [null, 10, 20]
+    min_samples_split: [2, 5]
+
+  gradient_boosting:
+    n_estimators: [100, 200]
+    max_depth: [2, 3]
+    learning_rate: [0.05, 0.1]
+
+  xgboost:
+    n_estimators: [100, 200, 300]
+    max_depth: [3, 6]
+    learning_rate: [0.05, 0.1]
+
+  lightgbm:
+    n_estimators: [100, 200, 300]
+    max_depth: [-1, 10]
+    learning_rate: [0.05, 0.1]
+
+  gaussian_process:
+    length_scale: [1.0]
+    noise: [0.1, 1.0]
+    alpha: [1.0e-6]
+
+  # ANN: this study's primary model (SELU included for paper consistency)
+  ann:
+    architectures:
+      - [32, 16, 8]
+      - [64, 32, 16]
+      - [64, 32, 16, 8]
+      - [128, 64, 32]
+      - [128, 64, 32, 16, 8]
+    activation_functions: [relu, leaky_relu, elu, tanh, selu]
+    learning_rates: [0.001]
+    dropout_rates: [0.0, 0.1]
+    epochs: 400
+    batch_size: 16
+    early_stopping_patience: 30
+
+  # KAN (pykan) — kept small: pykan training is ~40-50x slower than the ANN
+  kan:
+    widths:
+      - [16, 1]
+    grid_size: [5]
+    spline_order: [3]
+    learning_rate: [0.01]
+    epochs: 100
+    batch_size: 16
+    early_stopping_patience: 20
+
+visualization:
+  figure_dpi: 300
+  top_n_configs: 10

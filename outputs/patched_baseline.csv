@@ -1,0 +1,76 @@
+Material,Material Thickness (mm),Patch,Patch Thickness (mm),Test Temperature (F),Failure Load (kN),Source
+A36 Steel,3.25,Glass-Fiber,1.0,70.0,34.0,experimental
+A36 Steel,3.25,Glass-Fiber,1.0,70.0,34.1,experimental
+A36 Steel,3.25,Glass-Fiber,1.0,70.0,34.3,experimental
+A36 Steel,3.25,Glass-Fiber,1.0,145.0,28.3,experimental
+A36 Steel,3.25,Glass-Fiber,1.0,145.0,27.8,experimental
+A36 Steel,3.25,Glass-Fiber,1.0,145.0,27.7,experimental
+A36 Steel,3.25,Glass-Fiber,1.0,-60.0,31.3,experimental
+A36 Steel,3.25,Glass-Fiber,1.0,-60.0,31.9,experimental
+A36 Steel,3.25,Glass-Fiber,1.0,-60.0,32.1,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,70.0,32.9,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,70.0,33.5,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,70.0,33.9,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,145.0,28.5,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,145.0,26.6,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,145.0,27.4,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,-60.0,31.9,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,-60.0,31.7,experimental
+A36 Steel,3.25,Carbon-Fiber,0.89,-60.0,31.8,experimental
+Al 6061,3.15,Glass-Fiber,1.0,70.0,22.8,experimental
+Al 6061,3.15,Glass-Fiber,1.0,70.0,22.7,experimental
+Al 6061,3.15,Glass-Fiber,1.0,70.0,22.5,experimental
+Al 6061,3.15,Glass-Fiber,1.0,145.0,19.9,experimental
+Al 6061,3.15,Glass-Fiber,1.0,145.0,19.8,experimental
+Al 6061,3.15,Glass-Fiber,1.0,145.0,19.6,experimental
+Al 6061,3.15,Glass-Fiber,1.0,-60.0,21.3,experimental
+Al 6061,3.15,Glass-Fiber,1.0,-60.0,21.2,experimental
+Al 6061,3.15,Glass-Fiber,1.0,-60.0,20.3,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,70.0,23.2,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,70.0,23.1,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,70.0,22.3,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,145.0,19.6,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,145.0,19.8,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,145.0,19.7,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,-60.0,21.3,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,-60.0,22.6,experimental
+Al 6061,3.15,Carbon-Fiber,0.89,-60.0,22.7,experimental
+Al 6061,4.65,Glass-Fiber,1.0,70.0,32.6,experimental
+Al 6061,4.65,Glass-Fiber,1.0,70.0,32.3,experimental
+Al 6061,4.65,Glass-Fiber,1.0,70.0,32.2,experimental
+Al 6061,4.65,Glass-Fiber,1.0,145.0,27.6,experimental
+Al 6061,4.65,Glass-Fiber,1.0,145.0,26.6,experimental
+Al 6061,4.65,Glass-Fiber,1.0,145.0,27.3,experimental
+Al 6061,4.65,Glass-Fiber,1.0,-60.0,29.5,experimental
+Al 6061,4.65,Glass-Fiber,1.0,-60.0,31.3,experimental
+Al 6061,4.65,Glass-Fiber,1.0,-60.0,31.1,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,70.0,32.8,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,70.0,32.1,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,70.0,32.2,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,145.0,27.1,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,145.0,26.5,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,145.0,27.0,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,-60.0,31.8,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,-60.0,31.7,experimental
+Al 6061,4.65,Carbon-Fiber,0.89,-60.0,31.3,experimental
+Al 6061,4.65,Glass-Fiber,1.64,70.0,33.1,experimental
+Al 6061,4.65,Glass-Fiber,1.64,70.0,33.6,experimental
+Al 6061,4.65,Glass-Fiber,1.64,70.0,32.8,experimental
+Al 6061,4.65,Glass-Fiber,1.64,145.0,28.8,experimental
+Al 6061,4.65,Glass-Fiber,1.64,145.0,28.2,experimental
+Al 6061,4.65,Glass-Fiber,1.64,145.0,27.3,experimental
+Al 6061,4.65,Glass-Fiber,1.64,-60.0,32.7,experimental
+Al 6061,4.65,Glass-Fiber,1.64,-60.0,32.6,experimental
+Al 6061,4.65,Glass-Fiber,1.64,-60.0,32.8,experimental
+Al 6061,3.15,Glass-Fiber,1.0,70.0,20.95,FE Predictions
+Al 6061,3.15,Glass-Fiber,1.0,145.0,18.42,FE Predictions
+Al 6061,3.15,Glass-Fiber,1.0,-60.0,19.83,FE Predictions
+Al 6061,3.15,Carbon-Fiber,0.89,70.0,22.15,FE Predictions
+Al 6061,3.15,Carbon-Fiber,0.89,145.0,18.77,FE Predictions
+Al 6061,3.15,Carbon-Fiber,0.89,-60.0,20.35,FE Predictions
+A36 Steel,3.25,Glass-Fiber,1.0,70.0,31.5,FE Predictions
+A36 Steel,3.25,Glass-Fiber,1.0,145.0,30.01,FE Predictions
+A36 Steel,3.25,Glass-Fiber,1.0,-60.0,30.03,FE Predictions
+A36 Steel,3.25,Carbon-Fiber,0.89,70.0,33.08,FE Predictions
+A36 Steel,3.25,Carbon-Fiber,0.89,145.0,29.71,FE Predictions
+A36 Steel,3.25,Carbon-Fiber,0.89,-60.0,30.6,FE Predictions
