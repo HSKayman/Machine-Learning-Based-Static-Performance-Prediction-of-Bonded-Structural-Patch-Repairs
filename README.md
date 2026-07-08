@@ -22,7 +22,7 @@ Options:
 python orchestrator.py --dataset patched      # one dataset only
 python orchestrator.py --skip-training        # replot from existing outputs
 python orchestrator.py --no-synthetic         # skip GMM augmentation
-```
+``` 
 
 ## Data
 
