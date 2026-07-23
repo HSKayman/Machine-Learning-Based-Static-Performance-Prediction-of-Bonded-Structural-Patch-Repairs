@@ -12,14 +12,20 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+AXIS_LABEL_FONTSIZE = 22
+TICK_LABEL_FONTSIZE = 15
+Y_CATEGORY_LABEL_FONTSIZE = 13
+
 plt.rcParams.update({
     "font.family": "serif",
-    "font.size": 12,
-    "axes.labelsize": 14,
+    "font.size": 13,
+    "axes.labelsize": AXIS_LABEL_FONTSIZE,
     "axes.labelweight": "bold",
     "axes.linewidth": 1.8,
-    "axes.titlesize": 14,
+    "axes.titlesize": 15,
     "axes.titleweight": "bold",
+    "xtick.labelsize": TICK_LABEL_FONTSIZE,
+    "ytick.labelsize": TICK_LABEL_FONTSIZE,
     "xtick.major.width": 1.8,
     "ytick.major.width": 1.8,
     "xtick.major.size": 6,
@@ -28,7 +34,7 @@ plt.rcParams.update({
 })
 
 
-def _style_axes(ax, xlabel=None, ylabel=None, tick_labelsize=12):
+def _style_axes(ax, xlabel=None, ylabel=None, tick_labelsize=TICK_LABEL_FONTSIZE,fontsize=AXIS_LABEL_FONTSIZE):
     # Publication styling: bold axis labels, bold tick labels, thicker spines.
     for spine in ax.spines.values():
         spine.set_linewidth(1.8)
@@ -36,9 +42,9 @@ def _style_axes(ax, xlabel=None, ylabel=None, tick_labelsize=12):
     for label in ax.get_xticklabels() + ax.get_yticklabels():
         label.set_fontweight("bold")
     if xlabel is not None:
-        ax.set_xlabel(xlabel, fontweight="bold", fontsize=20)
+        ax.set_xlabel(xlabel, fontweight="bold", fontsize=fontsize)
     if ylabel is not None:
-        ax.set_ylabel(ylabel, fontweight="bold", fontsize=20)
+        ax.set_ylabel(ylabel, fontweight="bold", fontsize=fontsize)
 
 COLORS = {"primary": "#2E86AB", "secondary": "#A23B72", "accent": "#F18F01",
           "danger": "#C73E1D", "neutral": "#3B3B3B", "light": "#E8E8E8"}
@@ -57,9 +63,21 @@ MODEL_DISPLAY = {
 }
 
 
+# Primary reported metric = real-data-only nested CV (GMM augmentation is reported
+# separately as an ablation). Fall back to the augmented columns if absent.
+PRIMARY_MAPE = "test_mape_base"
+PRIMARY_R2 = "test_r2_base"
+PRIMARY_MAPE_STD = "test_mape_base_std"
+
+
+def _mcol(df, name, fallback):
+    return name if name in df.columns else fallback
+
+
 def _best_model_row(comp: pd.DataFrame) -> pd.Series:
-    # Return the hold-out test best-performing model row.
-    return comp.sort_values("test_mape", ascending=True).iloc[0]
+    # Return the best real-data-only model row (primary reported metric).
+    col = _mcol(comp, PRIMARY_MAPE, "test_mape")
+    return comp.sort_values(col, ascending=True).iloc[0]
 
 
 def _dpi(config):
@@ -72,25 +90,29 @@ def model_comparison_fig(output_dir: Path, ds: str, dpi: int):
     path = output_dir / f"{ds}_model_comparison.xlsx"
     if not path.exists():
         return
-    df = pd.read_excel(path).sort_values("test_mape", ascending=True).reset_index(drop=True)
+    df = pd.read_excel(path)
+    mcol = _mcol(df, PRIMARY_MAPE, "test_mape")
+    r2col = _mcol(df, PRIMARY_R2, "test_r2")
+    stdcol = _mcol(df, PRIMARY_MAPE_STD, "test_mape_std")
+    df = df.sort_values(mcol, ascending=True).reset_index(drop=True)
     fig, ax = plt.subplots(figsize=(9, 6))
     ypos = np.arange(len(df))
-    bars = ax.barh(ypos, df["test_mape"], color=COLORS["primary"], edgecolor=COLORS["neutral"], alpha=0.85)
+    xerr = df[stdcol] if stdcol in df.columns else None
+    bars = ax.barh(ypos, df[mcol], xerr=xerr, color=COLORS["primary"],
+                   edgecolor=COLORS["neutral"], alpha=0.85, capsize=3)
     bars[0].set_color(COLORS["accent"])
     ax.scatter(df["cv_aug_mape"], ypos, color=COLORS["danger"], zorder=3, s=45,
-               label="Selection CV MAPE")
+               label="Selection CV MAPE (+GMM)")
     ax.set_yticks(ypos)
-    ax.set_yticklabels(df["model"])
+    ax.set_yticklabels(df["model"], fontsize=Y_CATEGORY_LABEL_FONTSIZE, fontweight="bold")
     ax.invert_yaxis()
-    _style_axes(ax, xlabel="Hold-out test MAPE (%)")
-    for label in ax.get_yticklabels():
-        label.set_fontweight("bold")
-    for i, (m, r2) in enumerate(zip(df["test_mape"], df["test_r2"])):
-        ax.text(m + 0.1, i, f"{m:.2f}%  (R²={r2:.2f})", va="center", fontsize=10, fontweight="bold")
+    _style_axes(ax, xlabel="Nested CV MAPE (%) — real data")
+    for i, (m, r2) in enumerate(zip(df[mcol], df[r2col])):
+        ax.text(m + 0.1, i, f"{m:.2f}%  (R²={r2:.2f})", va="center", fontsize=12, fontweight="bold")
     leg = ax.legend(loc="lower right")
     for text in leg.get_texts():
         text.set_fontweight("bold")
-    ax.set_xlim(0, df["test_mape"].max() * 1.35)
+    ax.set_xlim(0, df[mcol].max() * 1.35)
     ax.grid(True, axis="x", alpha=0.3, ls="--")
     fig.tight_layout()
     fig.savefig(output_dir / f"{ds}_model_comparison.pdf", dpi=dpi, bbox_inches="tight")
@@ -124,9 +146,9 @@ def ann_grid_fig(output_dir: Path, ds: str, dpi: int):
                    edgecolor=COLORS["neutral"], alpha=0.85, capsize=3)
     bars[0].set_color(COLORS["accent"])
     ax.set_yticks(ypos)
-    ax.set_yticklabels(labels, fontsize=9, fontweight="bold")
+    ax.set_yticklabels(labels, fontsize=Y_CATEGORY_LABEL_FONTSIZE, fontweight="bold")
     ax.invert_yaxis()
-    _style_axes(ax, xlabel="Selection CV MAPE (%)", tick_labelsize=10)
+    _style_axes(ax, xlabel="Selection CV MAPE (%)", fontsize=Y_CATEGORY_LABEL_FONTSIZE)
     for i, (m, s) in enumerate(zip(combo["mean_mape"], combo["std_mape"])):
         ax.text(m + s + 0.1, i, f"{m:.2f}%", va="center", fontsize=9, fontweight="bold")
     from matplotlib.patches import Patch
@@ -187,7 +209,11 @@ def all_conf_bar_fig(output_dir: Path, ds: str, dpi: int):
     path = output_dir / f"{ds}_model_comparison.xlsx"
     if not path.exists():
         return
-    df = pd.read_excel(path).sort_values("test_mape", ascending=True).reset_index(drop=True)
+    df = pd.read_excel(path)
+    mcol = _mcol(df, PRIMARY_MAPE, "test_mape")
+    r2col = _mcol(df, PRIMARY_R2, "test_r2")
+    stdcol = _mcol(df, PRIMARY_MAPE_STD, "test_mape_std")
+    df = df.sort_values(mcol, ascending=True).reset_index(drop=True)
     n = len(df)
     # Top 3, middle 4, bottom 3 (10 models total)
     top_n, mid_n, bot_n = 3, 4, 3
@@ -200,25 +226,26 @@ def all_conf_bar_fig(output_dir: Path, ds: str, dpi: int):
     colors = ([COLORS["accent"]] + [COLORS["primary"]] * (top_n - 1)
               + [COLORS["secondary"]] * mid_n + [COLORS["danger"]] * bot_n)
 
-    fig, ax = plt.subplots(figsize=(11, max(6, len(combo) * 0.55 + 1)))
+    fig, ax = plt.subplots(figsize=(15, max(6, len(combo) * 0.55 + 1)))
     ypos = np.arange(len(combo))
-    bars = ax.barh(ypos, combo["test_mape"], color=colors,
-                   edgecolor=COLORS["neutral"], alpha=0.85)
+    xerr = combo[stdcol] if stdcol in combo.columns else None
+    bars = ax.barh(ypos, combo[mcol], xerr=xerr, color=colors,
+                   edgecolor=COLORS["neutral"], alpha=0.85, capsize=3)
     ax.set_yticks(ypos)
-    ax.set_yticklabels(labels, fontsize=9, fontweight="bold")
+    ax.set_yticklabels(labels, fontsize=Y_CATEGORY_LABEL_FONTSIZE, fontweight="bold")
     ax.invert_yaxis()
-    _style_axes(ax, xlabel="Hold-out test MAPE (%)", tick_labelsize=11)
-    xmax = combo["test_mape"].max() * 1.35
+    _style_axes(ax, xlabel="Nested CV MAPE (%) — real data")
+    xmax = combo[mcol].max() * 1.35
     ax.set_xlim(0, xmax)
     for i, (_, r) in enumerate(combo.iterrows()):
-        ax.text(r["test_mape"] + xmax * 0.01, i,
-                f"{r['test_mape']:.2f}%  (R\u00b2={r['test_r2']:.3f})",
-                va="center", fontsize=9, fontweight="bold", color=COLORS["neutral"])
+        ax.text(r[mcol] + xmax * 0.01, i-0.3,
+                f"{r[mcol]:.2f}%  (R\u00b2={r[r2col]:.3f})",
+                va="center", fontsize=13, fontweight="bold", color=COLORS["neutral"])
     best = combo.iloc[0]
     best_name = MODEL_DISPLAY.get(best["model"], best["model"])
-    ax.text(0.98, 0.93,
-            f"Best: {best_name}\nMAPE={best['test_mape']:.2f}%\nR\u00b2={best['test_r2']:.3f}",
-            transform=ax.transAxes, ha="right", va="center", fontsize=11, fontweight="bold",
+    ax.text(-0.4, -0.1,
+            f"Best:\n {best_name}\nMAPE={best[mcol]:.2f}%\nR\u00b2={best[r2col]:.3f}",
+            transform=ax.transAxes, ha="right", va="center", fontsize=12, fontweight="bold",
             bbox=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor=COLORS["neutral"]))
     from matplotlib.patches import Patch
     legend = ax.legend(handles=[
@@ -226,7 +253,7 @@ def all_conf_bar_fig(output_dir: Path, ds: str, dpi: int):
         Patch(facecolor=COLORS["primary"], label="Top 3"),
         Patch(facecolor=COLORS["secondary"], label="Middle 4"),
         Patch(facecolor=COLORS["danger"], label="Bottom 3"),
-    ], loc="center right", bbox_to_anchor=(1.0, 0.55), fontsize=9, framealpha=0.95)
+    ], loc="center right", bbox_to_anchor=(1.0, 0.55), fontsize=12, framealpha=1)
     for text in legend.get_texts():
         text.set_fontweight("bold")
     ax.grid(True, axis="x", alpha=0.3, ls="--")
@@ -234,7 +261,7 @@ def all_conf_bar_fig(output_dir: Path, ds: str, dpi: int):
     fig.tight_layout()
     fig.savefig(output_dir / f"{ds}_all_models_bar.pdf", dpi=dpi, bbox_inches="tight")
     plt.close(fig)
-    print(f"  Saved {ds}_all_models_bar.pdf (hold-out, {best_name})")
+    print(f"  Saved {ds}_all_models_bar.pdf (nested CV real data, {best_name})")
 
 
 def scatter_fig(output_dir: Path, ds: str, dpi: int):
@@ -245,9 +272,12 @@ def scatter_fig(output_dir: Path, ds: str, dpi: int):
         return
     preds = pd.read_csv(pred_path)
     comp = pd.read_excel(comp_path)
+    mcol = _mcol(comp, PRIMARY_MAPE, "test_mape")
+    r2col = _mcol(comp, PRIMARY_R2, "test_r2")
     best = _best_model_row(comp)
     model_key = best["model"]
-    pred_col = f"pred_{model_key}"
+    # Prefer the real-data-only out-of-fold predictions when available.
+    pred_col = f"pred_base_{model_key}" if f"pred_base_{model_key}" in preds.columns else f"pred_{model_key}"
     if pred_col not in preds.columns:
         print(f"  Skipped {ds}_scatter.pdf — missing column {pred_col}")
         return
@@ -259,23 +289,23 @@ def scatter_fig(output_dir: Path, ds: str, dpi: int):
     lo = min(y.min(), yp.min())
     hi = max(y.max(), yp.max())
     m = (hi - lo) * 0.08
-    rng = [lo - m, hi + m]
+    rng = [5,35]
 
     fig, ax = plt.subplots(figsize=(7, 7))
     ax.scatter(y, yp, c=COLORS["primary"], s=80, alpha=0.8,
-               edgecolors=COLORS["neutral"], label="Hold-out test (real data)")
+               edgecolors=COLORS["neutral"], label="Out-of-fold prediction (real data)")
     ax.plot(rng, rng, "k--", lw=2, alpha=0.7, label="Perfect prediction")
     ax.fill_between(rng, [v * 0.9 for v in rng], [v * 1.1 for v in rng],
                     color=COLORS["accent"], alpha=0.25, label="±10% error band")
-    ax.set_xlim(rng)
-    ax.set_ylim(rng)
+    ax.set_xlim([5,35])
+    ax.set_ylim([5,35])
     ax.set_aspect("equal", "box")
     _style_axes(ax, xlabel="Actual Failure Load (kN)", ylabel="Predicted Failure Load (kN)")
-    ax.annotate(f"{model_label}\nhold-out test\nMAPE={best['test_mape']:.2f}%\nR²={best['test_r2']:.3f}",
+    ax.annotate(f"{model_label}\nnested CV (out-of-fold, real data)\nMAPE={best[mcol]:.2f}%\nR²={best[r2col]:.3f}",
                 xy=(0.05, 0.95), xycoords="axes fraction", va="top",
                 fontsize=12, fontweight="bold",
                 bbox=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor=COLORS["neutral"]))
-    leg = ax.legend(loc="lower right", fontsize=10)
+    leg = ax.legend(loc="lower right", fontsize=12)
     for text in leg.get_texts():
         text.set_fontweight("bold")
     ax.grid(True, alpha=0.3, ls="--")
@@ -293,12 +323,14 @@ def importance_fig(output_dir: Path, ds: str, dpi: int):
     df = pd.read_csv(path)
     ann = df[df["model"] == "ANN"] if "ANN" in df["model"].values else df[df["model"] == df["model"].iloc[0]]
     ann = ann.sort_values("delta_mape", ascending=True)
+    xerr = ann["delta_mape_std"] if "delta_mape_std" in ann.columns else None
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.barh(ann["feature"], ann["delta_mape"], color=COLORS["secondary"],
-            edgecolor=COLORS["neutral"], alpha=0.85)
-    _style_axes(ax, xlabel="Permutation importance (Δ MAPE, %)")
+    ax.barh(ann["feature"], ann["delta_mape"], xerr=xerr, color=COLORS["secondary"],
+            edgecolor=COLORS["neutral"], alpha=0.85, capsize=3)
+    _style_axes(ax, xlabel="Permutation importance (Δ MAPE, %)", fontsize=Y_CATEGORY_LABEL_FONTSIZE)
     for label in ax.get_yticklabels():
         label.set_fontweight("bold")
+        label.set_fontsize(Y_CATEGORY_LABEL_FONTSIZE)
     ax.grid(True, axis="x", alpha=0.3, ls="--")
     fig.tight_layout()
     fig.savefig(output_dir / f"{ds}_feature_importance.pdf", dpi=dpi, bbox_inches="tight")

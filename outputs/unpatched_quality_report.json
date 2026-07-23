@@ -94,5 +94,69 @@
         "A36 Steel": 0.44298245614035087
       }
     }
-  }
+  },
+  "n_components_selected": 3,
+  "bic_scores": {
+    "1": 121.41409071236231,
+    "2": -864.094229877239,
+    "3": -1015.8904837204692,
+    "4": -981.9242267948243,
+    "5": -987.8354005546764
+  },
+  "conditional_checks": {
+    "A36 Steel": {
+      "n_original": 36,
+      "n_synthetic": 101,
+      "target_ks_p": 0.7395356358744108,
+      "target_mean_original": 23.96158469054976,
+      "target_mean_synthetic": 24.095461897112656,
+      "target_input_corr": {
+        "Crack Length (mm)": {
+          "original": -0.7152814291942772,
+          "synthetic": -0.6128116637878805
+        },
+        "Test Temperature (F)": {
+          "original": 0.033688287170920136,
+          "synthetic": 0.06887902853793648
+        },
+        "Material Thickness (mm)": {
+          "original": 0.6882932984614224,
+          "synthetic": 0.5724146775653108
+        }
+      }
+    },
+    "Al 6061": {
+      "n_original": 36,
+      "n_synthetic": 127,
+      "target_ks_p": 0.7035315904878451,
+      "target_mean_original": 16.290999229843514,
+      "target_mean_synthetic": 15.76946941712035,
+      "target_input_corr": {
+        "Crack Length (mm)": {
+          "original": -0.6709619477225854,
+          "synthetic": -0.683753490389135
+        },
+        "Test Temperature (F)": {
+          "original": -0.002070908313828696,
+          "synthetic": -0.08348476668851487
+        },
+        "Material Thickness (mm)": {
+          "original": 0.9209084684959592,
+          "synthetic": 0.8617803088775695
+        }
+      }
+    }
+  },
+  "accepted_on_attempt": 1,
+  "n_attempts": 1,
+  "seed_used": 42,
+  "rejection_rate": 0.0,
+  "attempts_log": [
+    {
+      "attempt": 1,
+      "seed": 42,
+      "passed": true,
+      "correlation_diff": 0.14587212882911896
+    }
+  ]
 }

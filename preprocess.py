@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import yaml
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 # Sources that count as *real* (non-synthetic) baseline data.
@@ -189,21 +189,17 @@ def extract_baseline(df: pd.DataFrame) -> Tuple[pd.DataFrame, Optional[str]]:
     return df[mask].reset_index(drop=True), source_col
 
 
-def _stratify_key(df: pd.DataFrame) -> Optional[pd.Series]:
-    # Build a stratification key (material x temperature) if possible.
-    mat = next((c for c in df.columns if c.strip().lower() == "material"), None)
-    temp = next((c for c in df.columns if "temperature" in c.lower()), None)
-    if mat is None:
-        return None
-    key = df[mat].astype(str)
-    if temp is not None:
-        key = key + "|" + df[temp].astype(str)
-    # Strata with a single member break stratification; fall back to material.
-    if key.value_counts().min() < 2:
-        key = df[mat].astype(str)
-    if key.value_counts().min() < 2:
-        return None
-    return key
+def config_group_labels(df: pd.DataFrame) -> np.ndarray:
+    # Physical-configuration group id for grouped (leakage-free) splitting.
+    # The group key is every input column (all columns except the target and the
+    # provenance/Source column), so replicates, FE, and theoretical rows that
+    # share the same design point are always kept in the same group. This is what
+    # lets GroupKFold / leave-one-configuration-out evaluate generalization to
+    # genuinely unseen configurations instead of specimen-to-specimen scatter.
+    df = clean_dataframe(df)
+    float_cols, cat_cols, _target, _source = DataPreprocessor("tmp")._identify_columns(df)
+    key_cols = list(float_cols) + list(cat_cols)
+    return df[key_cols].astype(str).agg("|".join, axis=1).values
 
 
 def main():
@@ -238,17 +234,18 @@ def main():
             for k, v in baseline[source_col].value_counts().items():
                 print(f"    {k}: {v}")
 
-        # Reproducible outer hold-out test set of real physical data.
-        strat = _stratify_key(baseline)
-        train_df, test_df = train_test_split(
-            baseline,
-            test_size=test_size,
-            random_state=random_state,
-            stratify=strat,
-        )
-        train_df = train_df.reset_index(drop=True)
-        test_df = test_df.reset_index(drop=True)
-        print(f"  Outer split -> train: {len(train_df)}, hold-out test: {len(test_df)}")
+        # Reproducible outer hold-out test set of real physical data, split by
+        # physical configuration (grouped) so no configuration appears in both
+        # partitions. train.py performs the full nested grouped CV; this single
+        # grouped split is retained only for the deployable preprocessor/artifact.
+        groups = config_group_labels(baseline)
+        n_groups = len(np.unique(groups))
+        gss = GroupShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+        tr_idx, te_idx = next(gss.split(baseline, groups=groups))
+        train_df = baseline.iloc[tr_idx].reset_index(drop=True)
+        test_df = baseline.iloc[te_idx].reset_index(drop=True)
+        print(f"  Unique configurations (groups): {n_groups}")
+        print(f"  Grouped outer split -> train: {len(train_df)}, hold-out test: {len(test_df)}")
 
         # Persist raw baseline splits (train.py re-fits preprocessing per fold).
         baseline.to_csv(output_dir / f"{dataset_type}_baseline.csv", index=False)

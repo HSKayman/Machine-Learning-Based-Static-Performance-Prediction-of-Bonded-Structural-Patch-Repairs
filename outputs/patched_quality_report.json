@@ -104,5 +104,91 @@
         "Carbon-Fiber": 0.4533333333333333
       }
     }
-  }
+  },
+  "n_components_selected": 3,
+  "bic_scores": {
+    "1": -443.1657501472227,
+    "2": -2314.2649194528394,
+    "3": -2769.494123997255,
+    "4": -2888.6372564668527,
+    "5": -3276.3256333547743
+  },
+  "conditional_checks": {
+    "A36 Steel | Carbon-Fiber": {
+      "n_original": 12,
+      "n_synthetic": 36,
+      "target_ks_p": 0.9926988317195958,
+      "target_mean_original": 30.965833333333332,
+      "target_mean_synthetic": 30.853810965978557,
+      "target_input_corr": {
+        "Test Temperature (F)": {
+          "original": -0.48726979762198624,
+          "synthetic": -0.5533038561310529
+        }
+      }
+    },
+    "A36 Steel | Glass-Fiber": {
+      "n_original": 12,
+      "n_synthetic": 30,
+      "target_ks_p": 0.5928997585578787,
+      "target_mean_original": 31.086666666666662,
+      "target_mean_synthetic": 30.443694041332254,
+      "target_input_corr": {
+        "Test Temperature (F)": {
+          "original": -0.39708256369314127,
+          "synthetic": -0.6065482890338264
+        }
+      }
+    },
+    "Al 6061 | Carbon-Fiber": {
+      "n_original": 21,
+      "n_synthetic": 66,
+      "target_ks_p": 0.42106985086400694,
+      "target_mean_original": 25.146190476190473,
+      "target_mean_synthetic": 24.560043364105997,
+      "target_input_corr": {
+        "Material Thickness (mm)": {
+          "original": 0.914570604085814,
+          "synthetic": 0.7492452556186471
+        },
+        "Test Temperature (F)": {
+          "original": -0.23848424264020351,
+          "synthetic": -0.1157995536098662
+        }
+      }
+    },
+    "Al 6061 | Glass-Fiber": {
+      "n_original": 30,
+      "n_synthetic": 93,
+      "target_ks_p": 0.3883184158289928,
+      "target_mean_original": 26.72333333333334,
+      "target_mean_synthetic": 27.403911481104636,
+      "target_input_corr": {
+        "Material Thickness (mm)": {
+          "original": 0.9238829028201981,
+          "synthetic": 0.8755471462910298
+        },
+        "Patch Thickness (mm)": {
+          "original": 0.5727060704645847,
+          "synthetic": 0.5617620831360206
+        },
+        "Test Temperature (F)": {
+          "original": -0.18568742516894166,
+          "synthetic": -0.2077725614105289
+        }
+      }
+    }
+  },
+  "accepted_on_attempt": 1,
+  "n_attempts": 1,
+  "seed_used": 42,
+  "rejection_rate": 0.0,
+  "attempts_log": [
+    {
+      "attempt": 1,
+      "seed": 42,
+      "passed": true,
+      "correlation_diff": 0.1306128058846587
+    }
+  ]
 }

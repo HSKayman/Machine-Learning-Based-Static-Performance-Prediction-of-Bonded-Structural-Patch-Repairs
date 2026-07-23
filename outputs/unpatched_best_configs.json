@@ -1,8 +1,8 @@
 {
   "Linear": {},
   "Polynomial": {
-    "degree": 3,
-    "alpha": 10.0
+    "degree": 2,
+    "alpha": 0.1
   },
   "SVR": {
     "kernel": "rbf",
@@ -11,8 +11,8 @@
     "gamma": "scale"
   },
   "RandomForest": {
-    "n_estimators": 300,
-    "max_depth": 20,
+    "n_estimators": 200,
+    "max_depth": null,
     "min_samples_split": 5
   },
   "GradientBoosting": {
@@ -21,18 +21,18 @@
     "learning_rate": 0.1
   },
   "XGBoost": {
-    "n_estimators": 200,
+    "n_estimators": 100,
     "max_depth": 3,
-    "learning_rate": 0.05
+    "learning_rate": 0.1
   },
   "LightGBM": {
-    "n_estimators": 300,
-    "max_depth": 10,
-    "learning_rate": 0.1
+    "n_estimators": 200,
+    "max_depth": -1,
+    "learning_rate": 0.05
   },
   "GaussianProcess": {
     "length_scale": 1.0,
-    "noise": 0.1,
+    "noise": 1.0,
     "alpha": 1e-06
   },
   "ANN": {
@@ -43,7 +43,7 @@
     ],
     "activation": "selu",
     "learning_rate": 0.001,
-    "dropout_rate": 0.0
+    "dropout_rate": 0.1
   },
   "KAN": {
     "width": [

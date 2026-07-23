@@ -18,12 +18,16 @@ synthetic:
   max_retries: 5
   random_state: 42
   snap_discrete: true     # snap near-discrete inputs to valid physical values
+  sensitivity_targets: [75, 150, 300, 600]  # synthetic-sample-count sweep (comment D)
   quality:
     ks_test_alpha: 0.05
 
-# Evaluation protocol
+# Evaluation protocol: nested grouped cross-validation (leakage-free, grouped by
+# unique physical configuration). Inner loop selects hyperparameters; outer loop
+# gives the unbiased estimate reported as mean +/- std.
 evaluation:
-  k_folds: 5              # CV used for hyperparameter selection (leakage-free)
+  k_outer: 5              # outer GroupKFold folds (unbiased evaluation)
+  k_inner: 3              # inner GroupKFold folds (hyperparameter selection)
   random_state: 42
   augment_in_fold: true   # GMM fit on the training portion of each fold only
 

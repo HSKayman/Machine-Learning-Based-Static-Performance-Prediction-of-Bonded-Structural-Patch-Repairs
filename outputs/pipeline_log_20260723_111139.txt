@@ -1,0 +1,76 @@
+[2026-07-23 09:07:53] [INFO] ============================================================
+[2026-07-23 09:07:53] [INFO] ANN EXPERIMENT PIPELINE
+[2026-07-23 09:07:53] [INFO] ============================================================
+[2026-07-23 09:07:53] [INFO] Dataset: both
+[2026-07-23 09:07:53] [INFO] Config: config.yaml
+[2026-07-23 09:07:53] [INFO] Output: outputs
+[2026-07-23 09:07:53] [INFO] ------------------------------------------------------------
+[2026-07-23 09:07:53] [INFO] Starting stage: Preprocessing
+[2026-07-23 09:07:53] [INFO] Completed Preprocessing in 0.9s
+[2026-07-23 09:07:53] [INFO] ------------------------------------------------------------
+[2026-07-23 09:07:53] [INFO] Starting stage: Synthetic Data Generation
+[2026-07-23 09:07:56] [INFO] Completed Synthetic Data Generation in 2.2s
+[2026-07-23 09:07:56] [INFO] ------------------------------------------------------------
+[2026-07-23 09:07:56] [INFO] Starting stage: Training & Grid Search
+[2026-07-23 11:10:40] [INFO] Completed Training & Grid Search in 7364.4s
+[2026-07-23 11:10:40] [INFO] ------------------------------------------------------------
+[2026-07-23 11:10:40] [INFO] Starting stage: Feature Importance
+[2026-07-23 11:11:36] [INFO] Completed Feature Importance in 56.5s
+[2026-07-23 11:11:36] [INFO] ------------------------------------------------------------
+[2026-07-23 11:11:36] [INFO] Starting stage: Visualization
+[2026-07-23 11:11:39] [INFO] Completed Visualization in 2.6s
+[2026-07-23 11:11:39] [INFO] ------------------------------------------------------------
+[2026-07-23 11:11:39] [INFO] Pipeline completed in 7426.6s (123.8 min)
+[2026-07-23 11:11:39] [INFO] ============================================================
+[2026-07-23 11:11:39] [INFO] 
+Generated files:
+[2026-07-23 11:11:39] [INFO]   - .gitkeep
+[2026-07-23 11:11:39] [INFO]   - patched_all_models_bar.pdf
+[2026-07-23 11:11:39] [INFO]   - patched_all_results.xlsx
+[2026-07-23 11:11:39] [INFO]   - patched_ann_grid.xlsx
+[2026-07-23 11:11:39] [INFO]   - patched_ann_grid_bar.pdf
+[2026-07-23 11:11:39] [INFO]   - patched_aug_sensitivity.csv
+[2026-07-23 11:11:39] [INFO]   - patched_augmented.csv
+[2026-07-23 11:11:39] [INFO]   - patched_baseline.csv
+[2026-07-23 11:11:39] [INFO]   - patched_baseline_test.csv
+[2026-07-23 11:11:39] [INFO]   - patched_baseline_train.csv
+[2026-07-23 11:11:39] [INFO]   - patched_best_configs.json
+[2026-07-23 11:11:39] [INFO]   - patched_feature_importance.csv
+[2026-07-23 11:11:39] [INFO]   - patched_feature_importance.pdf
+[2026-07-23 11:11:39] [INFO]   - patched_feature_info.json
+[2026-07-23 11:11:39] [INFO]   - patched_final_ann.pt
+[2026-07-23 11:11:39] [INFO]   - patched_final_preprocessor.pkl
+[2026-07-23 11:11:39] [INFO]   - patched_model_comparison.pdf
+[2026-07-23 11:11:39] [INFO]   - patched_model_comparison.xlsx
+[2026-07-23 11:11:39] [INFO]   - patched_preprocessor.pkl
+[2026-07-23 11:11:39] [INFO]   - patched_quality_report.json
+[2026-07-23 11:11:39] [INFO]   - patched_scatter.pdf
+[2026-07-23 11:11:39] [INFO]   - patched_synthetic_distributions.pdf
+[2026-07-23 11:11:39] [INFO]   - patched_synthetic_distributions.png
+[2026-07-23 11:11:39] [INFO]   - patched_test_predictions.csv
+[2026-07-23 11:11:39] [INFO]   - pipeline_log_20260707_203505.txt
+[2026-07-23 11:11:39] [INFO]   - pipeline_log_20260723_085435.txt
+[2026-07-23 11:11:39] [INFO]   - pipeline_run.log
+[2026-07-23 11:11:39] [INFO]   - unpatched_all_models_bar.pdf
+[2026-07-23 11:11:39] [INFO]   - unpatched_all_results.xlsx
+[2026-07-23 11:11:39] [INFO]   - unpatched_ann_grid.xlsx
+[2026-07-23 11:11:39] [INFO]   - unpatched_ann_grid_bar.pdf
+[2026-07-23 11:11:39] [INFO]   - unpatched_aug_sensitivity.csv
+[2026-07-23 11:11:39] [INFO]   - unpatched_augmented.csv
+[2026-07-23 11:11:39] [INFO]   - unpatched_baseline.csv
+[2026-07-23 11:11:39] [INFO]   - unpatched_baseline_test.csv
+[2026-07-23 11:11:39] [INFO]   - unpatched_baseline_train.csv
+[2026-07-23 11:11:39] [INFO]   - unpatched_best_configs.json
+[2026-07-23 11:11:39] [INFO]   - unpatched_feature_importance.csv
+[2026-07-23 11:11:39] [INFO]   - unpatched_feature_importance.pdf
+[2026-07-23 11:11:39] [INFO]   - unpatched_feature_info.json
+[2026-07-23 11:11:39] [INFO]   - unpatched_final_ann.pt
+[2026-07-23 11:11:39] [INFO]   - unpatched_final_preprocessor.pkl
+[2026-07-23 11:11:39] [INFO]   - unpatched_model_comparison.pdf
+[2026-07-23 11:11:39] [INFO]   - unpatched_model_comparison.xlsx
+[2026-07-23 11:11:39] [INFO]   - unpatched_preprocessor.pkl
+[2026-07-23 11:11:39] [INFO]   - unpatched_quality_report.json
+[2026-07-23 11:11:39] [INFO]   - unpatched_scatter.pdf
+[2026-07-23 11:11:39] [INFO]   - unpatched_synthetic_distributions.pdf
+[2026-07-23 11:11:39] [INFO]   - unpatched_synthetic_distributions.png
+[2026-07-23 11:11:39] [INFO]   - unpatched_test_predictions.csv
