@@ -36,8 +36,7 @@ Results and PDF figures are written to `outputs/` and copied to `Figures/` for t
 Key files: `*_model_comparison.xlsx`, `*_test_predictions.csv`, `*_all_results.xlsx`, `*_feature_importance.csv`
 
 ## Paper
-
-Manuscript materials and revision tooling live under `ML_Enabled_Static_MDPI/` (LaTeX sources, figure sync, and `makediff.sh` for latexdiff PDFs).
+https://www.mdpi.com/2504-477X/10/8/412
 
 ## Project Structure
 
